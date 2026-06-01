@@ -244,8 +244,6 @@ function getLearningStats() {
 }
 function setLearningStats(d) { return set(KEYS.LEARNING_STATS, d); }
 
-const { extraQuestions } = require('./extra-questions');
-
 // ——— 答题记录 ———
 function recordAnswer(questionId, answer, isCorrect, chapterId, mode) {
   const records = getAnswerRecords();
