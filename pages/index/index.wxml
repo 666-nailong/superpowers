@@ -66,6 +66,7 @@
       <view class="help-text">1️⃣ 🆓 免费本地引擎：无需任何设置，从课件PDF中检索答案（默认）</view>
       <view class="help-text">2️⃣ 🌐 AI大模型：需自行配置API Key，回答更强大（可选）</view>
       <view class="help-link" bindtap="showFreeApiGuide">👉 点击查看如何免费获取API Key</view>
+      <view class="help-link" bindtap="showQualityPicker" style="margin-top:4rpx">🖼️ 切换课件图片清晰度（当前：标准）</view>
     </view>
     <view class="help-item" bindtap="toggleHelp" data-key="study">
       <text>{{helpExpanded.study ? '▼' : '▶'}} 📖 学习流程</text>

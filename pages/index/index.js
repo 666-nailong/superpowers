@@ -59,6 +59,19 @@ Page({
     this.setData({ helpExpanded: expanded });
   },
 
+  showQualityPicker() {
+    const { setQuality, QUALITY_MAP } = require('../../utils/pdf-content');
+    const items = ['高清（画质优先）', '标准（推荐）', '省流（节省流量）'];
+    const keys = ['high', 'medium', 'low'];
+    wx.showActionSheet({
+      itemList: items,
+      success: (res) => {
+        setQuality(keys[res.tapIndex]);
+        wx.showToast({ title: '已切换为' + items[res.tapIndex], icon: 'success' });
+      }
+    });
+  },
+
   showFreeApiGuide() {
     const links = [
       { name: '① DeepSeek（推荐）', desc: '注册送500万tokens', url: 'https://platform.deepseek.com/api_keys' },
