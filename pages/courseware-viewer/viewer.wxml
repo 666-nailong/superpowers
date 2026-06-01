@@ -24,7 +24,7 @@
   </view>
 
   <!-- 批注弹出层 -->
-  <view wx:if="{{showAnnPanel}}" class="ann-mask" catchtap="closeAnnPanel">
+  <view wx:if="{{showAnnPanel}}" class="ann-mask" bindtap="closeAnnPanel">
     <view class="ann-panel" catchtap="">
       <view class="ann-panel-header">
         <text>批注</text>
