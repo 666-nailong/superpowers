@@ -6,9 +6,11 @@
   </view>
 
   <scroll-view scroll-y class="scroll-area">
-    <!-- 当前题目所在原卷页面 -->
-    <image class="exam-img" src="{{currentImg}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
-    <view class="img-label">原卷第{{imgPage}}页（红框为本题范围，仅供参考）</view>
+    <!-- 仅含电路图的题才显示原卷图片 -->
+    <view wx:if="{{hasImage}}" class="img-section">
+      <image class="exam-img" src="{{currentImg}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
+      <view class="img-label">↑ 题目电路图（原卷第{{imgPage}}页）</view>
+    </view>
 
     <!-- 题目卡片 -->
     <view class="q-card">
@@ -36,7 +38,7 @@
     </view>
 
     <!-- 下一题按钮 -->
-    <view wx:if="{{answered}}" class="next-btn primary-btn" bindtap="nextQuestion">
+    <view wx:if="{{answered && !finished}}" class="next-btn primary-btn" bindtap="nextQuestion">
       {{qIndex < totalQ ? '下一题 →' : '完成练习 🎉'}}
     </view>
 
