@@ -37,11 +37,13 @@ Page({
     });
 
     // 真题
+    const examPages = { exam2019: 4, exam2020: 2, exam2021: 5, exam2022: 6, exam2023: 2 };
     const pastExams = (qData.pastExams || []).map((exam, idx) => ({
       id: exam.id,
       icon: ['📄', '📃', '📋', '📜', '📑'][idx % 5],
       title: exam.title,
-      count: (exam.questions || []).length
+      count: (exam.questions || []).length,
+      pages: examPages[exam.id] || 2
     }));
 
     // 上次模拟考成绩
@@ -68,6 +70,13 @@ Page({
   startMock() {
     wx.navigateTo({
       url: '/pages/question-practice/practice?mode=mock'
+    });
+  },
+
+  viewExam(e) {
+    const { id, title, pages } = e.currentTarget.dataset;
+    wx.navigateTo({
+      url: `/pages/exam-viewer/viewer?examId=${id}&title=${encodeURIComponent(title)}&total=${pages}`
     });
   }
 });

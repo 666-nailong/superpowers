@@ -22,11 +22,15 @@
   <!-- 真题专区 -->
   <view class="section-title">📋 真题专区</view>
   <view class="card exam-section">
-    <view wx:for="{{pastExams}}" wx:for-item="ex" wx:key="id" class="exam-entry" data-id="{{ex.id}}" bindtap="startExam">
+    <view wx:for="{{pastExams}}" wx:for-item="ex" wx:key="id" class="exam-entry">
       <view class="exam-icon">{{ex.icon}}</view>
       <view class="exam-info">
         <view class="exam-title">{{ex.title}}</view>
         <view class="exam-meta">{{ex.count}} 题</view>
+        <view class="exam-actions">
+          <view class="exam-btn" bindtap="startExam" data-id="{{ex.id}}">📝 刷题</view>
+          <view class="exam-btn" bindtap="viewExam" data-id="{{ex.id}}" data-title="{{ex.title}}" data-pages="{{ex.pages}}">📄 原卷</view>
+        </view>
       </view>
       <view class="exam-arrow">›</view>
     </view>

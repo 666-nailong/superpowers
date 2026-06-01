@@ -11,7 +11,8 @@
     "pages/formulas/formulas",
     "pages/ai-assistant/assistant",
     "pages/profile/profile",
-    "pages/my-annotations/annotations"
+    "pages/my-annotations/annotations",
+    "pages/exam-viewer/viewer"
   ],
   "window": {
     "navigationBarBackgroundColor": "#1A365D",
