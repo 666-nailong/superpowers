@@ -161,7 +161,7 @@ Page({
     qType: '', qText: '', options: [], answer: '',
     hasImage: false, currentImg: '', imgPage: 1,
     userChoice: '', userInput: '',
-    totalAnswered: 0,
+    totalAnswered: 0, examImgLoaded: false,
     answerStatus: [], // true/false per question
     userAnswers: [],  // user's answer per question
     submitted: false, showSheet: false,
@@ -195,7 +195,8 @@ Page({
       currentImg: q.img ? `https://github.com/666-nailong/superpowers/releases/download/images-v1/exam_${this.data.examId}_${q.page}.jpg` : '',
       imgPage: q.page,
       userChoice: isChoice ? userAns : '',
-      userInput: isChoice ? '' : userAns
+      userInput: isChoice ? '' : userAns,
+      examImgLoaded: false
     });
   },
 
@@ -253,6 +254,7 @@ Page({
     });
   },
 
+  onExamImgLoad() { this.setData({ examImgLoaded: true }); },
   goBack() { wx.navigateBack(); }
 });
 

@@ -30,7 +30,7 @@ Page({
     const totalPages = getPageCount(fileId) || 1;
     const pageList = [];
     for (let i = 1; i <= totalPages; i++) {
-      pageList.push({ page: i, src: getPageImageUrl(fileId, i) });
+      pageList.push({ page: i, src: getPageImageUrl(fileId, i), loaded: false });
     }
     this.setData({ fileId, title, totalPages, pageList, currentPage: 1, currentIndex: 0 });
     this.loadAnnCount();
@@ -38,6 +38,18 @@ Page({
 
   onSwiperChange(e) {
     this.setData({ currentPage: e.detail.current + 1, currentIndex: e.detail.current });
+  },
+
+  onImgLoad(e) {
+    const idx = e.currentTarget.dataset.index;
+    const key = `pageList[${idx}].loaded`;
+    this.setData({ [key]: true });
+  },
+
+  onImgError(e) {
+    const idx = e.currentTarget.dataset.index;
+    const key = `pageList[${idx}].loaded`;
+    this.setData({ [key]: true }); // hide loading even on error
   },
 
   // ===== 批注计数 =====

@@ -115,6 +115,12 @@
 .ai-chat-send { margin-left:12rpx; padding:14rpx 32rpx; border-radius:8rpx; font-size:26rpx; background:#E2E8F0; color:#A0AEC0; }
 .ai-chat-send.active { background:#1A365D; color:#fff; }
 
+/* 图片加载状态 */
+.img-wrapper { position:relative; width:100%; min-height:400rpx; }
+.img-loading { position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#F7F8FA; color:#A0AEC0; font-size:24rpx; gap:16rpx; }
+.loading-spinner { width:48rpx; height:48rpx; border:4rpx solid #E2E8F0; border-top-color:#1A365D; border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
 /* 全屏查看 */
 .fullscreen-mask {
   position: fixed;
