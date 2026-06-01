@@ -3,88 +3,68 @@
   <view class="viewer-header">
     <view class="viewer-back" bindtap="goBack">← 返回</view>
     <view class="viewer-title">{{title}}</view>
-    <view class="viewer-action" bindtap="showAnnotations" wx:if="{{pageAnnotationCount > 0}}">
-      💬 {{pageAnnotationCount}}
-    </view>
+    <view class="viewer-info">{{currentPage}} / {{totalPages}}页</view>
   </view>
 
-  <!-- 内容区 -->
-  <view class="content-area">
-    <view class="pdf-open-card">
-      <view class="pdf-icon">📄</view>
-      <view class="pdf-title">{{title}}</view>
-      <view class="pdf-desc">点击下方按钮查看完整PDF课件</view>
-      <view class="primary-btn" bindtap="openPdf" data-fileid="{{fileId}}" data-title="{{title}}">
-        打开PDF课件
-      </view>
-    </view>
-
-    <!-- 批注定区域 -->
-    <view class="section-title">💬 课件批注</view>
-    <view class="card annotations-section">
-      <view wx:if="{{pageAnnotationCount === 0}}" class="empty-state">
-        <view style="font-size:60rpx;margin-bottom:16rpx">✏️</view>
-        <view>还没有批注</view>
-        <view style="font-size:24rpx;color:#A0AEC0;margin-top:8rpx">点下方按钮添加批注</view>
-      </view>
-
-      <view wx:for="{{recentAnnotations}}" wx:key="id" class="annotation-preview">
-        <view class="annp-user">{{item.userName}}</view>
-        <view class="annp-text">{{item.content}}</view>
-      </view>
-
-      <view class="add-ann-btn secondary-btn" bindtap="showAnnotations">
-        ✏️ 添加批注
-      </view>
-    </view>
-  </view>
-
-  <!-- AI提问浮动按钮 -->
-  <view class="ai-float-btn" bindtap="askAI">
-    <text class="ai-float-icon">🤖</text>
-    <text class="ai-float-label">AI提问</text>
-  </view>
-
-  <!-- 批注面板（从底部弹出） -->
-  <view wx:if="{{showAnnotationPanel}}" class="annotation-mask" catchtap="hideAnnotations">
-    <view class="annotation-panel">
-      <view class="panel-header">
-        <text class="panel-title">批注（{{pageAnnotationCount}}）</text>
-        <text class="panel-close" bindtap="hideAnnotations">✕</text>
-      </view>
-
-      <view class="panel-body">
-        <view wx:if="{{currentAnnotations.length === 0}}" class="empty-state">
-          <view style="color:#A0AEC0;padding:40rpx 0;text-align:center">暂无批注，第一个发言吧</view>
-        </view>
-
-        <view wx:for="{{currentAnnotations}}" wx:key="id" class="annotation-item">
-          <view class="ann-header">
-            <text class="ann-user">{{item.userName}}</text>
-            <text class="ann-page">{{item.pageLabel}}</text>
-            <text class="ann-time">{{item.time}}</text>
-            <text class="ann-likes" bindtap="likeAnnotation" data-id="{{item.id}}">
-              {{item.liked ? '❤️' : '🤍'}} {{item.likes}}
-            </text>
-          </view>
-          <view class="ann-content">{{item.content}}</view>
-
-          <view wx:for="{{item.replies}}" wx:key="id" class="reply-item">
-            <text class="reply-user">{{item.userName}}：</text>
-            <text class="reply-text">{{item.content}}</text>
-          </view>
-
-          <view class="reply-input-row">
-            <input class="reply-input" placeholder="回复..." bindblur="onReplyInput" data-id="{{item.id}}" />
-            <text class="reply-send" bindtap="sendReply" data-id="{{item.id}}">发送</text>
+  <!-- 页面显示区 -->
+  <view class="page-area">
+    <swiper class="page-swiper" current="{{currentIndex}}" bindchange="onSwiperChange" circular="{{false}}">
+      <swiper-item wx:for="{{pageList}}" wx:key="*this" class="swiper-slide">
+        <view class="page-wrapper">
+          <image class="page-image" src="{{item.src}}" mode="widthFix" bindtap="onPageTap" data-page="{{item.page}}" show-menu-by-longpress="{{true}}"></image>
+          <!-- 批注标记 -->
+          <view wx:for="{{item.annotations}}" wx:key="id" class="ann-marker"
+                style="left:{{item.x}}%;top:{{item.y}}%"
+                bindtap="onMarkerTap" data-id="{{item.id}}">
+            <text>{{item.likes > 0 ? '💬' : '💭'}}</text>
           </view>
         </view>
-      </view>
+      </swiper-item>
+    </swiper>
+  </view>
 
-      <view class="add-annotation">
-        <input class="ann-input" placeholder="添加批注（最多200字）" maxlength="200" id="annInput" />
-        <view class="ann-submit primary-btn" bindtap="submitAnnotation">提交</view>
+  <!-- 批注弹出层 -->
+  <view wx:if="{{showAnnPanel}}" class="ann-mask" bindtap="closeAnnPanel">
+    <view class="ann-panel">
+      <view class="ann-panel-header">
+        <text>批注</text>
+        <text bindtap="closeAnnPanel" style="font-size:32rpx;color:#A0AEC0;padding:8rpx">✕</text>
+      </view>
+      <scroll-view scroll-y class="ann-list">
+        <view wx:if="{{currentAnnotations.length === 0}}" style="padding:40rpx 0;text-align:center;color:#A0AEC0;font-size:26rpx">暂无批注</view>
+        <view wx:for="{{currentAnnotations}}" wx:key="id" class="ann-item">
+          <view class="ann-item-header">
+            <text class="ann-item-user">{{item.userName}} 第{{item.pageNum}}页</text>
+            <text class="ann-item-like" bindtap="likeAnnotation" data-id="{{item.id}}">{{item.liked ? '❤️' : '🤍'}} {{item.likes}}</text>
+          </view>
+          <view class="ann-item-content">{{item.content}}</view>
+          <view wx:for="{{item.replies}}" wx:key="id" class="ann-reply">
+            <text class="ann-reply-user">{{item.userName}}：</text>
+            <text>{{item.content}}</text>
+          </view>
+          <view class="ann-reply-row">
+            <input class="ann-reply-input" placeholder="回复..." bindblur="onReplyInput" data-id="{{item.id}}" />
+            <text class="ann-reply-send" bindtap="sendReply" data-id="{{item.id}}">发送</text>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="ann-add-row">
+        <input class="ann-add-input" placeholder="添加批注..." id="annInput" />
+        <view class="ann-add-btn" bindtap="submitAnnotation">提交</view>
       </view>
     </view>
+  </view>
+
+  <!-- 翻页按钮 -->
+  <view class="page-nav">
+    <view class="nav-btn {{currentPage <= 1 ? 'disabled' : ''}}" bindtap="prevPage">◀ 上一页</view>
+    <view class="nav-center">{{currentPage}} / {{totalPages}}</view>
+    <view class="nav-btn {{currentPage >= totalPages ? 'disabled' : ''}}" bindtap="nextPage">下一页 ▶</view>
+  </view>
+
+  <!-- 右下角按钮组 -->
+  <view class="float-btns">
+    <view class="float-btn" bindtap="showAnnPanel">💬 {{annCount}}</view>
+    <view class="float-btn ai-btn" bindtap="askAI">🤖 AI</view>
   </view>
 </view>

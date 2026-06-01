@@ -59,5 +59,52 @@
     ]
   },
   "requiredBackgroundModes": [],
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "subpackages": [
+    {
+      "root": "assets/pdf_pages/ch01_01",
+      "name": "ch01_01",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch01_02",
+      "name": "ch01_02",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch02_01",
+      "name": "ch02_01",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch03_01",
+      "name": "ch03_01",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch04_01",
+      "name": "ch04_01",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch05_01",
+      "name": "ch05_01",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch06_01",
+      "name": "ch06_01",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch07_01",
+      "name": "ch07_01",
+      "pages": []
+    },
+    {
+      "root": "assets/pdf_pages/ch08_01",
+      "name": "ch08_01",
+      "pages": []
+    }
+  ]
 }
