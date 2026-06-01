@@ -19,10 +19,10 @@
       <!-- 选项 -->
       <view wx:if="{{options.length > 0}}" class="opt-list">
         <view wx:for="{{options}}" wx:for-item="opt" wx:key="index"
-          class="opt-item {{userChoice === opt.key ? 'selected' : ''}} {{submitted ? (opt.key === correctKey ? 'correct' : (userChoice === opt.key ? 'wrong' : '')) : ''}}"
-          bindtap="selectOpt" data-key="{{opt.key}}">
-          <view class="opt-radio">{{userChoice === opt.key ? '●' : '○'}}</view>
-          <view class="opt-text"><text class="opt-label">{{opt.key}}.</text> {{opt.text}}</view>
+          class="opt-item {{userChoice === opt.k ? 'selected' : ''}}"
+          bindtap="selectOpt" data-key="{{opt.k}}">
+          <view class="opt-radio">{{userChoice === opt.k ? '●' : '○'}}</view>
+          <view class="opt-text"><text class="opt-label">{{opt.k}}.</text> {{opt.t}}</view>
         </view>
       </view>
 
