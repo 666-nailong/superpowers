@@ -1,12 +1,9 @@
 const storage = require('../../utils/storage');
-const pageMap = require('../../utils/page-map');
 const { findInPdfContent } = require('../../utils/local-qa');
 const { getPageImageUrl } = require('../../utils/pdf-content');
 
-function getPageCount(fileId) {
-  const info = pageMap[fileId];
-  return info ? info.pages : 0;
-}
+const pageCounts = { ch01_01:47, ch01_02:78, ch02_01:42, ch03_01:60, ch04_01:55, ch05_01:63, ch06_01:42, ch07_01:35, ch08_01:82 };
+function getPageCount(fileId) { return pageCounts[fileId] || 0; }
 
 Page({
   data: {
