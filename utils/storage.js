@@ -82,24 +82,60 @@ const defaultQuestions = {
 const defaultFormulas = {
   categories: [
     { id: "fcat_basic", title: "基本定律", formulas: [
-      { id: "ohm", title: "欧姆定律", latex: "U = IR", description: "关联方向下电阻两端电压与电流成正比", tags: ["欧姆定律"] },
-      { id: "kcl", title: "KCL", latex: "∑i = 0", description: "基尔霍夫电流定律", tags: ["KCL"] },
-      { id: "kvl", title: "KVL", latex: "∑u = 0", description: "基尔霍夫电压定律", tags: ["KVL"] }
+      { id: "ohm", title: "欧姆定律", latex: "U = IR",
+        description: "关联方向下电阻两端电压与电流成正比",
+        derivation: "实验发现：对于线性电阻，通过电流I与两端电压U成正比 → U∝I → 引入比例常数R → U=IR。R的单位为欧姆(Ω)，1Ω=1V/A。注意：此式仅在关联参考方向下成立（电流从电压正极流入），非关联方向需加负号 U=-IR。",
+        tags: ["欧姆定律"] },
+      { id: "kcl", title: "KCL基尔霍夫电流定律", latex: "∑i = 0",
+        description: "节点电流代数和为零",
+        derivation: "电荷守恒定律在电路中的体现：流入节点的电荷量=流出节点的电荷量。\n\n推导：设节点连接N条支路，流入电流为正、流出为负 → i₁+i₂+...+iN=0。\n\n独立KCL方程数 = n-1（n为节点数）。\n\n广义KCL：对任意闭合面同样成立。",
+        tags: ["KCL"] },
+      { id: "kvl", title: "KVL基尔霍夫电压定律", latex: "∑u = 0",
+        description: "回路电压代数和为零",
+        derivation: "能量守恒（电位单值性）在电路中的体现：从某点出发绕回路一周回到原点，电位升降代数和为零。\n\n推导：沿回路选定绕行方向，电压降取正、电压升取负 → u₁+u₂+...+uN=0。\n\n注意两点间电压与路径无关，可由KVL推导。",
+        tags: ["KVL"] }
     ]},
     { id: "fcat_ac", title: "交流电路", formulas: [
-      { id: "xl", title: "感抗", latex: "XL = ωL = 2πfL", description: "与频率成正比", tags: ["感抗"] },
-      { id: "xc", title: "容抗", latex: "XC = 1/(ωC)", description: "与频率成反比", tags: ["容抗"] },
-      { id: "z", title: "阻抗", latex: "Z = R + jX", description: "|Z| = √(R²+X²)", tags: ["阻抗"] },
-      { id: "p", title: "有功功率", latex: "P = UI·cosφ", description: "电阻实际消耗的功率", tags: ["功率"] }
+      { id: "xl", title: "感抗", latex: "XL = ωL = 2πfL",
+        description: "电感对交流的阻碍作用，与频率成正比",
+        derivation: "电感VCR：u=L·di/dt。\n设 i=Iₘcos(ωt) → di/dt = -Iₘω·sin(ωt) = Iₘω·cos(ωt+90°)\n→ u = L·Iₘω·cos(ωt+90°) = Iₘ·(ωL)·cos(ωt+90°)\n令XL=ωL，则电压超前电流90°，容抗XL单位为Ω。\n直流时ω=0 → XL=0 → 电感相当于短路。",
+        tags: ["感抗"] },
+      { id: "xc", title: "容抗", latex: "XC = 1/(ωC)",
+        description: "电容对交流的阻碍作用，与频率成反比",
+        derivation: "电容VCR：i=C·du/dt。\n设 u=Uₘcos(ωt) → du/dt = -Uₘω·sin(ωt) = Uₘω·cos(ωt-90°)\n→ i = C·Uₘω·cos(ωt-90°) = Uₘ/(1/ωC)·cos(ωt-90°)\n令XC=1/ωC，则电流超前电压90°，容抗XC单位为Ω。\n直流时ω=0 → XC→∞ → 电容相当于开路。",
+        tags: ["容抗"] },
+      { id: "z", title: "阻抗", latex: "Z = R + jX",
+        description: "|Z| = √(R²+X²)，阻抗角φ=arctan(X/R)",
+        derivation: "阻抗定义为电压相量与电流相量之比：Z=U/I。\n\n电阻R：Z_R=R（实数）\n电感L：Z_L=jωL=jXL（虚数正，电压超前90°）\n电容C：Z_C=1/(jωC)=-jXC（虚数负，电压滞后90°）\n\n串联总阻抗 Z=R+j(XL-XC)=R+jX\n模 |Z|=√(R²+X²)\n阻抗角 φ=arctan(X/R)，X>0感性，X<0容性。",
+        tags: ["阻抗"] },
+      { id: "p", title: "有功功率", latex: "P = UI·cosφ",
+        description: "电阻实际消耗的平均功率，单位W",
+        derivation: "瞬时功率 p(t)=u(t)·i(t)=UₘIₘcos(ωt+φu)·cos(ωt+φi)\n利用三角恒等式：cosα·cosβ=½[cos(α-β)+cos(α+β)]\n令φ=φu-φi（电压超前电流的相位差）：\np(t)=UI[cosφ+cos(2ωt+φu+φi)]\n\n在一个周期内平均（cos(2ωt+...)项积分为0）：\nP = (1/T)∫p(t)dt = UI·cosφ\n\ncosφ 称为功率因数，φ=0时P=UI（纯电阻），φ=±90°时P=0（纯L/C）。",
+        tags: ["功率"] }
     ]},
     { id: "fcat_resonance", title: "谐振", formulas: [
-      { id: "rf", title: "谐振频率", latex: "f₀ = 1/(2π√LC)", description: "RLC谐振", tags: ["谐振"] },
-      { id: "rq", title: "品质因数", latex: "Q = ω₀L/R", description: "Q越大选择性越好", tags: ["品质因数"] }
+      { id: "rf", title: "谐振频率", latex: "f₀ = 1/(2π√LC)",
+        description: "RLC串联/并联谐振频率",
+        derivation: "谐振条件：感抗=容抗 → ω₀L = 1/(ω₀C)\n→ ω₀² = 1/(LC) → ω₀ = 1/√(LC)\n\nf₀ = ω₀/(2π) = 1/(2π√(LC))\n\n谐振时：①阻抗Z=R(最小/最大)；②电压电流同相(cosφ=1)；③L和C之间能量完全交换，总无功为零。",
+        tags: ["谐振"] },
+      { id: "rq", title: "品质因数Q", latex: "Q = ω₀L/R = 1/(ω₀CR)",
+        description: "Q越大选择性越好，通频带越窄",
+        derivation: "Q = 谐振时电路中储存的能量/每个周期消耗的能量 × 2π\n\n串联RLC：Q = ω₀L/R = 1/(ω₀CR)\n谐振时：UL=UC=Q·Us（电压谐振，Q可>>1）\n\n通频带 BW = f₀/Q = R/(2πL)\nQ越大→谐振曲线越尖锐→选择性越好→通频带越窄。",
+        tags: ["品质因数"] }
     ]},
     { id: "fcat_transient", title: "一阶动态电路", formulas: [
-      { id: "3e", title: "三要素法", latex: "f(t)=f(∞)+[f(0+)-f(∞)]e^(-t/τ)", description: "一阶直流电路万能解法", tags: ["三要素"] },
-      { id: "trc", title: "RC时间常数", latex: "τ = RC", description: "RC电路", tags: ["时间常数"] },
-      { id: "trl", title: "RL时间常数", latex: "τ = L/R", description: "RL电路", tags: ["时间常数"] }
+      { id: "3e", title: "三要素法", latex: "f(t)=f(∞)+[f(0+)-f(∞)]e^(-t/τ)",
+        description: "一阶直流电路的万能解法",
+        derivation: "一阶电路微分方程标准形式：df/dt + f/τ = A\n\n通解=特解+齐次解：\n① 特解（稳态）f(∞) = A·τ（t→∞时）\n② 齐次解 f_h(t) = Ce^(-t/τ)\n\n全解 f(t) = f(∞) + Ce^(-t/τ)\n代入初始条件 t=0+：f(0+)=f(∞)+C → C=f(0+)-f(∞)\n\n→ f(t) = f(∞) + [f(0+)-f(∞)]·e^(-t/τ)\n\n零输入：f(∞)=0 → f(t)=f(0+)·e^(-t/τ)\n零状态：f(0+)=0 → f(t)=f(∞)·(1-e^(-t/τ))",
+        tags: ["三要素"] },
+      { id: "trc", title: "RC时间常数", latex: "τ = RC",
+        description: "RC电路的时间常数",
+        derivation: "RC串联电路，由KVL：RC·du_C/dt + u_C = u_S\n\n标准形式：du_C/dt + u_C/(RC) = u_S/(RC)\n\n对比一阶标准形式 df/dt + f/τ = A\n得 τ = RC\n\n物理意义：τ是电容电压充到稳态值63.2%或衰减到初始值36.8%所需时间。\n工程上认为3τ~5τ过渡过程结束。",
+        tags: ["时间常数"] },
+      { id: "trl", title: "RL时间常数", latex: "τ = L/R",
+        description: "RL电路的时间常数",
+        derivation: "RL串联电路，由KVL：L·di/dt + Ri = u_S\n\n两边除以R：L/R · di/dt + i = u_S/R\n\n标准形式：di/dt + i/(L/R) = u_S/L\n\n对比一阶标准形式 df/dt + f/τ = A\n得 τ = L/R\n\n物理意义：τ是电感电流充到稳态值63.2%或衰减到初始值36.8%所需时间。\n与RC电路的τ=RC互为对偶关系。",
+        tags: ["时间常数"] }
     ]}
   ]
 };

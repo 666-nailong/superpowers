@@ -20,17 +20,23 @@
   <view wx:for="{{categories}}" wx:key="id" class="formula-category">
     <view class="section-title">{{item.title}}</view>
     <view class="card">
-      <view wx:for="{{item.formulas}}" wx:key="id" class="formula-item" data-id="{{item.id}}" bindtap="toggleFavorite">
+      <view wx:for="{{item.formulas}}" wx:for-item="f" wx:key="id" class="formula-item">
         <view class="formula-header">
-          <view class="formula-latex">{{item.latex}}</view>
-          <view class="formula-fav {{item.favorited ? 'fav-active' : ''}}">
-            {{item.favorited ? '★' : '☆'}}
+          <view class="formula-latex">{{f.latex}}</view>
+          <view class="formula-fav {{f.favorited ? 'fav-active' : ''}}" bindtap="toggleFavorite" data-id="{{f.id}}">
+            {{f.favorited ? '★' : '☆'}}
           </view>
         </view>
-        <view class="formula-title">{{item.title}}</view>
-        <view class="formula-desc">{{item.description}}</view>
-        <view wx:if="{{item.tags}}" class="formula-tags">
-          <text wx:for="{{item.tags}}" wx:key="*this" class="tag tag-primary">{{item}}</text>
+        <view class="formula-title">{{f.title}}</view>
+        <view class="formula-desc">{{f.description}}</view>
+        <view wx:if="{{f.tags}}" class="formula-tags">
+          <text wx:for="{{f.tags}}" wx:key="*this" class="tag tag-primary">{{item}}</text>
+        </view>
+        <view wx:if="{{f.derivation}}" class="derivation-area">
+          <view class="derivation-toggle" bindtap="toggleDerivation" data-id="{{f.id}}">
+            {{expandedDerivation === f.id ? '🔼 收起推导' : '🔽 查看推导过程'}}
+          </view>
+          <view wx:if="{{expandedDerivation === f.id}}" class="derivation-content">{{f.derivation}}</view>
         </view>
       </view>
     </view>

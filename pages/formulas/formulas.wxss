@@ -56,3 +56,6 @@
   display: flex;
   flex-wrap: wrap;
 }
+.derivation-area { margin-top: 16rpx; border-top: 2rpx solid #E2E8F0; padding-top: 16rpx; }
+.derivation-toggle { font-size: 24rpx; color: #1A365D; padding: 8rpx 0; }
+.derivation-content { font-size: 24rpx; color: #4A5568; line-height: 1.8; padding: 16rpx; background: #F7F8FA; border-radius: 8rpx; margin-top: 8rpx; white-space: pre-wrap; }

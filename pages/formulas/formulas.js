@@ -4,7 +4,8 @@ Page({
   data: {
     categories: [],
     searchQuery: '',
-    searchResults: []
+    searchResults: [],
+    expandedDerivation: ''
   },
 
   onShow() {
@@ -55,6 +56,13 @@ Page({
       });
     });
     this.setData({ searchResults: results });
+  },
+
+  toggleDerivation(e) {
+    const id = e.currentTarget.dataset.id;
+    this.setData({
+      expandedDerivation: this.data.expandedDerivation === id ? '' : id
+    });
   },
 
   clearSearch() {
