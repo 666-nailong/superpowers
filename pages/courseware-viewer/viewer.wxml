@@ -24,8 +24,8 @@
   </view>
 
   <!-- 批注弹出层 -->
-  <view wx:if="{{showAnnPanel}}" class="ann-mask" bindtap="closeAnnPanel">
-    <view class="ann-panel">
+  <view wx:if="{{showAnnPanel}}" class="ann-mask" catchtap="closeAnnPanel">
+    <view class="ann-panel" catchtap="">
       <view class="ann-panel-header">
         <text>批注</text>
         <text bindtap="closeAnnPanel" style="font-size:32rpx;color:#A0AEC0;padding:8rpx">✕</text>
@@ -43,13 +43,13 @@
             <text>{{item.content}}</text>
           </view>
           <view class="ann-reply-row">
-            <input class="ann-reply-input" placeholder="回复..." bindblur="onReplyInput" data-id="{{item.id}}" />
+            <input class="ann-reply-input" placeholder="回复..." bindinput="onReplyInput" data-id="{{item.id}}" />
             <text class="ann-reply-send" bindtap="sendReply" data-id="{{item.id}}">发送</text>
           </view>
         </view>
       </scroll-view>
       <view class="ann-add-row">
-        <input class="ann-add-input" placeholder="添加批注..." id="annInput" />
+        <input class="ann-add-input" placeholder="添加批注..." bindinput="onAnnInput" />
         <view class="ann-add-btn" bindtap="submitAnnotation">提交</view>
       </view>
     </view>

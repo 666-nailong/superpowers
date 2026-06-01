@@ -129,43 +129,37 @@ Page({
     this.setData({ showAnnPanel: true });
   },
 
+  onAnnInput(e) { this.setData({ annInputVal: e.detail.value }); },
+
   submitAnnotation() {
-    const query = wx.createSelectorQuery();
-    query.select('#annInput').fields({ value: true }, (res) => {
-      const content = (res && res.value || '').trim();
-      if (!content) {
-        wx.showToast({ title: '请输入批注', icon: 'none' });
-        return;
-      }
-      const key = `${this.data.fileId}_${this.data.currentPage}`;
-      const allAnn = storage.getAnnotations();
-      if (!allAnn[key]) {
-        allAnn[key] = { fileId: this.data.fileId, pageNum: this.data.currentPage, annotations: [] };
-      }
-      allAnn[key].annotations.push({
-        id: 'ann_' + Date.now(),
-        userId: 'default_user',
-        userName: '匿名同学',
-        content,
-        pageNum: this.data.currentPage,
-        createdAt: Date.now(),
-        likes: 0,
-        likedBy: [],
-        replies: []
-      });
-      storage.setAnnotations(allAnn);
-
-      const myAnn = storage.getMyAnnotations();
-      myAnn.push({ annotationId: 'ann_' + Date.now(), fileId: this.data.fileId, pageNum: this.data.currentPage, content, createdAt: Date.now() });
-      storage.setMyAnnotations(myAnn);
-
-      wx.showToast({ title: '批注已添加', icon: 'success' });
-      this.loadAnnotations(this.data.currentPage);
-      // 清空输入
-      const q2 = wx.createSelectorQuery();
-      q2.select('#annInput').node(n => { if (n && n.node) n.node.value = ''; }).exec();
+    const content = (this.data.annInputVal || '').trim();
+    if (!content) {
+      wx.showToast({ title: '请输入批注', icon: 'none' });
+      return;
+    }
+    const key = `${this.data.fileId}_${this.data.currentPage}`;
+    const allAnn = storage.getAnnotations();
+    if (!allAnn[key]) {
+      allAnn[key] = { fileId: this.data.fileId, pageNum: this.data.currentPage, annotations: [] };
+    }
+    allAnn[key].annotations.push({
+      id: 'ann_' + Date.now(),
+      userId: 'default_user',
+      userName: '匿名同学',
+      content,
+      pageNum: this.data.currentPage,
+      createdAt: Date.now(),
+      likes: 0,
+      likedBy: [],
+      replies: []
     });
-    query.exec();
+    storage.setAnnotations(allAnn);
+    const myAnn = storage.getMyAnnotations();
+    myAnn.push({ annotationId: 'ann_' + Date.now(), fileId: this.data.fileId, pageNum: this.data.currentPage, content, createdAt: Date.now() });
+    storage.setMyAnnotations(myAnn);
+    wx.showToast({ title: '批注已添加', icon: 'success' });
+    this.setData({ annInputVal: '' });
+    this.loadAnnotations(this.data.currentPage);
   },
 
   likeAnnotation(e) {
