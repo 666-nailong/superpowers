@@ -27,10 +27,18 @@ Page({
     const totalPages = getPageCount(fileId) || 1;
     const pageList = [];
     for (let i = 1; i <= totalPages; i++) {
-      pageList.push({ page: i, src: getPageImageUrl(fileId, i), loaded: false });
+      pageList.push({ page: i, src: getPageImageUrl(fileId, i), loaded: false, failed: false });
     }
     this.setData({ fileId, title, totalPages, pageList, currentPage: 1, currentIndex: 0 });
     this.loadAnnCount();
+  },
+
+  retryPage(e) {
+    const idx = e.currentTarget.dataset.index;
+    this.setData({
+      [`pageList[${idx}].loaded`]: false, [`pageList[${idx}].failed`]: false,
+      [`pageList[${idx}].src`]: getPageImageUrl(this.data.fileId, idx + 1)
+    });
   },
 
   onSwiperChange(e) {
@@ -41,6 +49,23 @@ Page({
     const idx = e.currentTarget.dataset.index;
     if (idx === undefined) return;
     this.setData({ [`pageList[${idx}].loaded`]: true });
+  },
+
+  onImgError(e) {
+    const idx = e.currentTarget.dataset.index;
+    if (idx === undefined) return;
+    const item = this.data.pageList[idx];
+    if (!item.failed) {
+      // 第一次失败：切备用CDN
+      const fallback = item.src.replace(
+        'github.com/666-nailong/superpowers/raw/images-v1',
+        'cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1'
+      );
+      this.setData({ [`pageList[${idx}].src`]: fallback, [`pageList[${idx}].failed`]: true });
+    } else {
+      // 第二次失败：显示加载失败
+      this.setData({ [`pageList[${idx}].loaded`]: true });
+    }
   },
 
   // ===== 批注计数 =====
@@ -92,7 +117,7 @@ Page({
     storage.setMyAnnotations(myAnn);
     wx.showToast({ title: '批注已添加', icon: 'success' });
     this.loadAnnCount();
-    if (this.data.showAnnListPage) this.loadAllAnnotations();
+    if (this.data.showAnnPanel) this.loadAllAnnotations();
   },
 
   // ===== 批注列表 =====
