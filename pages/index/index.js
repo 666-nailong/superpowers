@@ -7,7 +7,8 @@ Page({
     wrongCount: 0,
     studyHours: 0,
     recentActivities: [],
-    chapters: []
+    chapters: [],
+    helpExpanded: { ai: false, study: false, feature: false }
   },
 
   onShow() {
@@ -49,6 +50,30 @@ Page({
       studyHours,
       recentActivities: activities,
       chapters
+    });
+  },
+
+  toggleHelp(e) {
+    const key = e.currentTarget.dataset.key;
+    const expanded = { ...this.data.helpExpanded, [key]: !this.data.helpExpanded[key] };
+    this.setData({ helpExpanded: expanded });
+  },
+
+  showFreeApiGuide() {
+    wx.showModal({
+      title: '🔑 免费获取API Key',
+      content: '以下平台注册即送免费额度：\n\n① DeepSeek（推荐）\ndeepseek.com → 注册 → 500万tokens\n\n② 硅基流动\nsiliconflow.cn → 注册 → 2000万tokens\n\n③ 阿里通义千问\ndashscope.aliyun.com → 注册 → 100万tokens\n\n④ 月之暗面Kimi\nkimi.moonshot.cn → 注册 → 赠送额度\n\n获得API Key后，在AI答疑页面 → ⚙️设置 → 填入即可。',
+      showCancel: true,
+      cancelText: '复制DeepSeek链接',
+      confirmText: '知道了',
+      success: (res) => {
+        if (res.cancel) {
+          wx.setClipboardData({
+            data: 'https://platform.deepseek.com/',
+            success: () => { wx.showToast({ title: '链接已复制', icon: 'success' }); }
+          });
+        }
+      }
     });
   },
 

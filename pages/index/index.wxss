@@ -135,3 +135,10 @@
 .chapter-name { font-size: 28rpx; color: #1A202C; }
 .chapter-status { font-size: 22rpx; color: #10B981; margin-top: 4rpx; }
 .chapter-arrow { font-size: 36rpx; color: #A0AEC0; }
+
+/* 使用说明 */
+.help-card { padding: 0; overflow: hidden; }
+.help-item { padding: 28rpx 32rpx; border-bottom: 2rpx solid #E2E8F0; font-size: 28rpx; font-weight: 500; }
+.help-item:last-child { border-bottom: none; }
+.help-body { padding: 8rpx 32rpx 24rpx; display: flex; flex-direction: column; }
+.help-text { font-size: 24rpx; color: #4A5568; line-height: 1.8; }

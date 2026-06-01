@@ -55,6 +55,40 @@
     </view>
   </view>
 
+  <!-- 使用说明 -->
+  <view class="section-title">💡 使用说明</view>
+  <view class="card help-card">
+    <view class="help-item" bindtap="toggleHelp" data-key="ai">
+      <text>{{helpExpanded.ai ? '▼' : '▶'}} 🤖 AI答疑说明</text>
+    </view>
+    <view wx:if="{{helpExpanded.ai}}" class="help-body">
+      <text class="help-text">本小程序内置两种AI回答方式：</text>
+      <text class="help-text">1️⃣ 🆓 免费本地引擎：无需任何设置，从课件PDF中检索答案（默认）</text>
+      <text class="help-text">2️⃣ 🌐 AI大模型：需自行配置API Key，回答更强大（可选）</text>
+      <text class="help-text" style="margin-top:12rpx;color:#3B82F6;" bindtap="showFreeApiGuide">👉 点击查看如何免费获取API Key</text>
+    </view>
+
+    <view class="help-item" bindtap="toggleHelp" data-key="study">
+      <text>{{helpExpanded.study ? '▼' : '▶'}} 📖 学习流程</text>
+    </view>
+    <view wx:if="{{helpExpanded.study}}" class="help-body">
+      <text class="help-text">① 课件学习：看PDF课件 → 添加批注 → AI提问</text>
+      <text class="help-text">② 题库练习：章节刷题 → 真题模拟 → 错题重做</text>
+      <text class="help-text">③ 公式速查：按分类查找 → 查看推导过程</text>
+    </view>
+
+    <view class="help-item" bindtap="toggleHelp" data-key="feature">
+      <text>{{helpExpanded.feature ? '▼' : '▶'}} ✨ 特色功能</text>
+    </view>
+    <view wx:if="{{helpExpanded.feature}}" class="help-body">
+      <text class="help-text">• 课件批注：在PDF上添加/查看批注，支持点赞回复</text>
+      <text class="help-text">• 错题本：自动记录错题，可按章节筛选重做</text>
+      <text class="help-text">• 模拟考试：随机组卷限时答题</text>
+      <text class="help-text">• 真题原卷：查看历年真题扫描件</text>
+      <text class="help-text">• 公式推导：展开查看公式的完整推导过程</text>
+    </view>
+  </view>
+
   <!-- 学习动态 -->
   <view class="section-title">学习动态</view>
   <view class="card">
