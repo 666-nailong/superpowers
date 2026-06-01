@@ -9,7 +9,7 @@
   <!-- 页面显示区 -->
   <view class="page-area">
     <swiper class="page-swiper" current="{{currentIndex}}" bindchange="onSwiperChange" circular="{{false}}">
-      <swiper-item wx:for="{{pageList}}" wx:key="*this" class="swiper-slide">
+      <swiper-item wx:for="{{pageList}}" wx:key="page" class="swiper-slide">
         <view class="page-wrapper">
           <image class="page-image" src="{{item.src}}" mode="widthFix" bindtap="onPageTap" data-page="{{item.page}}" show-menu-by-longpress="{{true}}"></image>
           <!-- 批注标记 -->
