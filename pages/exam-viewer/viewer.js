@@ -158,6 +158,7 @@ Page({
     qType: '', qText: '', answer: '', explanation: '',
     userInput: '', answered: false, isCorrect: false,
     correctAnswer: '', autoFocus: false, inputHint: '输入你的答案',
+    options: [], canSubmit: false,
     finished: false, correctCount: 0, totalAnswered: 0, accuracy: 0
   },
 
@@ -174,6 +175,10 @@ Page({
   loadQ(idx) {
     if (idx >= this.db.questions.length) { this.finish(); return; }
     const q = this.db.questions[idx];
+    let options = [];
+    if (q.type === '单选题' || q.type === '多选题') {
+      options = ['A', 'B', 'C', 'D'];
+    }
     this.setData({
       currentIdx: idx, qIndex: idx + 1,
       qType: q.type, qText: q.text,
@@ -184,15 +189,24 @@ Page({
       answered: false, isCorrect: false,
       userInput: '', correctAnswer: q.answer || '',
       autoFocus: true, finished: false,
-      inputHint: q.type === '判断题' ? '输入"对"或"错"' : '输入你的答案'
+      options, canSubmit: false,
+      inputHint: '输入你的答案'
     });
+  },
+
+  setJudge(e) {
+    this.setData({ userInput: e.currentTarget.dataset.val, canSubmit: true });
+  },
+
+  setChoice(e) {
+    this.setData({ userInput: e.currentTarget.dataset.val, canSubmit: true });
   },
 
   onAnswer(e) { this.setData({ userInput: e.detail.value }); },
 
   submitAnswer() {
-    const input = this.data.userInput.trim();
-    if (!input) { wx.showToast({title:'请输入答案',icon:'none'}); return; }
+    const input = this.data.userInput.toString().trim();
+    if (!input) { wx.showToast({title:'请选择或输入答案',icon:'none'}); return; }
     const idx = this.data.currentIdx;
     const q = this.db.questions[idx];
     const correct = q.answer.toLowerCase();

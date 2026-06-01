@@ -22,8 +22,23 @@
 
       <!-- 答案输入 -->
       <view wx:if="{{!answered}}" class="answer-area">
-        <input class="answer-input" placeholder="{{inputHint}}" bindinput="onAnswer" focus="{{autoFocus}}" />
-        <view class="submit-btn" bindtap="submitAnswer">提交答案</view>
+        <!-- 判断题：对/错按钮 -->
+        <view wx:if="{{qType === '判断题'}}" class="judge-btns">
+          <view class="judge-btn {{userInput === '对' ? 'selected' : ''}}" bindtap="setJudge" data-val="对">✅ 对</view>
+          <view class="judge-btn {{userInput === '错' ? 'selected' : ''}}" bindtap="setJudge" data-val="错">❌ 错</view>
+        </view>
+
+        <!-- 选择题：选项按钮 -->
+        <view wx:elif="{{qType === '单选题' || qType === '多选题'}}" class="choice-btns">
+          <view wx:for="{{options}}" wx:key="*this" class="choice-btn {{userInput === item ? 'selected' : ''}}" bindtap="setChoice" data-val="{{item}}">{{item}}</view>
+        </view>
+
+        <!-- 其他题型：文本输入 -->
+        <view wx:else>
+          <input class="answer-input" placeholder="{{inputHint}}" bindinput="onAnswer" focus="{{autoFocus}}" />
+        </view>
+
+        <view class="submit-btn {{!canSubmit ? 'disabled' : ''}}" bindtap="submitAnswer">提交答案</view>
       </view>
 
       <!-- 批改结果 -->
