@@ -29,8 +29,7 @@
         <view class="exam-meta">共{{ex.totalQ}}题 | 可刷{{ex.count}}题</view>
         <view class="exam-struct">{{ex.struct}}</view>
         <view class="exam-actions">
-          <view class="exam-btn" bindtap="startExam" data-id="{{ex.id}}">📝 刷题练习</view>
-          <view class="exam-btn" bindtap="viewExam" data-id="{{ex.id}}" data-title="{{ex.title}}" data-pages="{{ex.pages}}">📄 查看原卷</view>
+          <view class="exam-btn primary-btn" bindtap="viewExam" data-id="{{ex.id}}" data-title="{{ex.title}}" data-pages="{{ex.pages}}">📝 开始练习</view>
         </view>
       </view>
       <view class="exam-arrow">›</view>

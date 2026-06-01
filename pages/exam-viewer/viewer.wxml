@@ -2,15 +2,45 @@
   <view class="header">
     <view class="back" bindtap="goBack">← 返回</view>
     <view class="title">{{title}}</view>
-    <view class="info">{{page}} / {{total}}页</view>
+    <view class="info">{{page}} / {{total}}页 | {{totalQ}}题</view>
   </view>
-  <swiper class="swiper" current="{{index}}" bindchange="onChange">
-    <swiper-item wx:for="{{pages}}" wx:key="page" class="slide">
-      <image class="img" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
-    </swiper-item>
-  </swiper>
-  <view class="bottom">
-    <view class="btn {{page <= 1 ? 'disabled' : ''}}" bindtap="prev">◀ 上一页</view>
-    <view class="btn {{page >= total ? 'disabled' : ''}}" bindtap="next">下一页 ▶</view>
-  </view>
+
+  <scroll-view scroll-y class="scroll-area">
+    <!-- 原卷图片 -->
+    <view class="exam-section">
+      <view class="section-label">📄 原卷第{{page}}页</view>
+      <image class="page-img" src="{{currentSrc}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
+    </view>
+
+    <!-- 答题区 -->
+    <view class="answer-section">
+      <view class="section-label">✏️ 你的答案</view>
+      
+      <view wx:for="{{answers}}" wx:for-item="ans" wx:key="index" class="answer-item">
+        <view class="answer-num">{{ans.label}}</view>
+        <input class="answer-input" placeholder="{{ans.placeholder}}" bindinput="onInput" data-index="{{index}}" />
+      </view>
+
+      <view wx:if="{{answers.length === 0}}" class="empty-hint">
+        翻到下一页继续答题
+      </view>
+
+      <view class="submit-btn" bindtap="submitPage">提交本页答案</view>
+      
+      <view wx:if="{{showResult}}" class="result-area">
+        <view wx:for="{{results}}" wx:key="index" class="result-item {{item.correct ? 'correct' : 'wrong'}}">
+          <text class="result-label">{{item.label}}</text>
+          <text class="result-status">{{item.correct ? '✅' : '❌'}} {{item.userAnswer}}</text>
+          <text wx:if="{{item.correctAnswer}}" class="result-answer">正确答案：{{item.correctAnswer}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 翻页 -->
+    <view class="page-nav-row">
+      <view class="nav-btn {{page <= 1 ? 'disabled' : ''}}" bindtap="prev">◀ 上一页</view>
+      <view class="page-indicator">{{page}}/{{total}}</view>
+      <view class="nav-btn {{page >= total ? 'disabled' : ''}}" bindtap="next">下一页 ▶</view>
+    </view>
+  </scroll-view>
 </view>
