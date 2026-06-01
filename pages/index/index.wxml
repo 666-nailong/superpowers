@@ -62,12 +62,11 @@
       <text>{{helpExpanded.ai ? '▼' : '▶'}} 🤖 AI答疑说明</text>
     </view>
     <view wx:if="{{helpExpanded.ai}}" class="help-body">
-      <text class="help-text">本小程序内置两种AI回答方式：</text>
-      <text class="help-text">1️⃣ 🆓 免费本地引擎：无需任何设置，从课件PDF中检索答案（默认）</text>
-      <text class="help-text">2️⃣ 🌐 AI大模型：需自行配置API Key，回答更强大（可选）</text>
-      <text class="help-text" style="margin-top:12rpx;color:#3B82F6;" bindtap="showFreeApiGuide">👉 点击查看如何免费获取API Key</text>
+      <view class="help-text">本小程序内置两种AI回答方式：</view>
+      <view class="help-text">1️⃣ 🆓 免费本地引擎：无需任何设置，从课件PDF中检索答案（默认）</view>
+      <view class="help-text">2️⃣ 🌐 AI大模型：需自行配置API Key，回答更强大（可选）</view>
+      <view class="help-link" bindtap="showFreeApiGuide">👉 点击查看如何免费获取API Key</view>
     </view>
-
     <view class="help-item" bindtap="toggleHelp" data-key="study">
       <text>{{helpExpanded.study ? '▼' : '▶'}} 📖 学习流程</text>
     </view>

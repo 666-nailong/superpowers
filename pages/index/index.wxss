@@ -142,3 +142,4 @@
 .help-item:last-child { border-bottom: none; }
 .help-body { padding: 8rpx 32rpx 24rpx; display: flex; flex-direction: column; }
 .help-text { font-size: 24rpx; color: #4A5568; line-height: 1.8; }
+.help-link { font-size: 24rpx; color: #3B82F6; margin-top: 12rpx; padding: 8rpx 0; }
