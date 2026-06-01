@@ -63,6 +63,7 @@
 .exam-arrow { font-size: 36rpx; color: #A0AEC0; }
 .exam-actions { display: flex; gap: 16rpx; margin-top: 12rpx; }
 .exam-btn { font-size: 24rpx; color: #1A365D; background: rgba(26,54,93,0.1); padding: 6rpx 20rpx; border-radius: 6rpx; }
+.exam-struct { font-size: 20rpx; color: #A0AEC0; margin-top: 4rpx; }
 
 /* 模拟考试 */
 .mock-section { padding: 24rpx; }

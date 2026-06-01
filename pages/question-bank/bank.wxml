@@ -26,10 +26,11 @@
       <view class="exam-icon">{{ex.icon}}</view>
       <view class="exam-info">
         <view class="exam-title">{{ex.title}}</view>
-        <view class="exam-meta">{{ex.count}} 题</view>
+        <view class="exam-meta">共{{ex.totalQ}}题 | 可刷{{ex.count}}题</view>
+        <view class="exam-struct">{{ex.struct}}</view>
         <view class="exam-actions">
-          <view class="exam-btn" bindtap="startExam" data-id="{{ex.id}}">📝 刷题</view>
-          <view class="exam-btn" bindtap="viewExam" data-id="{{ex.id}}" data-title="{{ex.title}}" data-pages="{{ex.pages}}">📄 原卷</view>
+          <view class="exam-btn" bindtap="startExam" data-id="{{ex.id}}">📝 刷题练习</view>
+          <view class="exam-btn" bindtap="viewExam" data-id="{{ex.id}}" data-title="{{ex.title}}" data-pages="{{ex.pages}}">📄 查看原卷</view>
         </view>
       </view>
       <view class="exam-arrow">›</view>
