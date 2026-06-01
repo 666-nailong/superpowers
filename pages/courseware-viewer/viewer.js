@@ -1,6 +1,6 @@
 const storage = require('../../utils/storage');
 const { findInPdfContent } = require('../../utils/local-qa');
-const { getPageImageUrl, downloadImage } = require('../../utils/pdf-content');
+const { getPageImageUrl } = require('../../utils/pdf-content');
 
 const pageCounts = { ch01_01:47, ch01_02:78, ch02_01:42, ch03_01:60, ch04_01:55, ch05_01:63, ch06_01:42, ch07_01:35, ch08_01:82 };
 function getPageCount(fileId) { return pageCounts[fileId] || 0; }
@@ -27,32 +27,23 @@ Page({
     const totalPages = getPageCount(fileId) || 1;
     const pageList = [];
     for (let i = 1; i <= totalPages; i++) {
-      pageList.push({ page: i, src: getPageImageUrl(fileId, i), loaded: false });
+      pageList.push({ page: i, src: getPageImageUrl(fileId, i), loaded: false, failed: false, fallback: '' });
     }
     this.setData({ fileId, title, totalPages, pageList, currentPage: 1, currentIndex: 0 });
     this.loadAnnCount();
-    this.preloadPage(1);
-    this.preloadPage(2);
   },
 
-  preloadPage(pageNum) {
-    if (pageNum < 1 || pageNum > this.data.totalPages) return;
-    const url = getPageImageUrl(this.data.fileId, pageNum);
-    const key = `pageList[${pageNum - 1}].src`;
-    const keyLoaded = `pageList[${pageNum - 1}].loaded`;
-    downloadImage(url).then((localPath) => {
-      this.setData({ [key]: localPath, [keyLoaded]: true });
-    }).catch(() => {
-      this.setData({ [key]: url, [keyLoaded]: true });
+  retryPage(e) {
+    const idx = e.currentTarget.dataset.index;
+    this.setData({
+      [`pageList[${idx}].loaded`]: false,
+      [`pageList[${idx}].failed`]: false,
+      [`pageList[${idx}].src`]: getPageImageUrl(this.data.fileId, idx + 1)
     });
   },
 
   onSwiperChange(e) {
-    const page = e.detail.current + 1;
-    this.setData({ currentPage: page, currentIndex: e.detail.current });
-    this.preloadPage(page);
-    this.preloadPage(page + 1); // 预加载下一页
-    this.preloadPage(page - 1); // 保持上一页缓存
+    this.setData({ currentPage: e.detail.current + 1, currentIndex: e.detail.current });
   },
 
   onImgLoad(e) {
@@ -63,8 +54,20 @@ Page({
 
   onImgError(e) {
     const idx = e.currentTarget.dataset.index;
-    const key = `pageList[${idx}].loaded`;
-    this.setData({ [key]: true }); // hide loading even on error
+    const item = this.data.pageList[idx];
+    if (!item.failed) {
+      // 第一次失败: 切换到备用CDN (GitHub直链)
+      const fallbackUrl = item.src.replace('cdn.jsdelivr.net/gh/', 'raw.githubusercontent.com/').replace('@images-v1/', '/images-v1/');
+      this.setData({
+        [`pageList[${idx}].failed`]: true,
+        [`pageList[${idx}].src`]: fallbackUrl,
+        [`pageList[${idx}].loaded`]: false
+      });
+    } else {
+      // 第二次失败: 显示加载失败图标
+      this.setData({ [`pageList[${idx}].loaded`]: true });
+      wx.showToast({ title: '图片加载失败', icon: 'none' });
+    }
   },
 
   // ===== 批注计数 =====

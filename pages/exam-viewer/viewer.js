@@ -161,7 +161,7 @@ Page({
     qType: '', qText: '', options: [], answer: '',
     hasImage: false, currentImg: '', imgPage: 1,
     userChoice: '', userInput: '',
-    totalAnswered: 0, examImgLoaded: false,
+    totalAnswered: 0, examImgLoaded: false, examImgFailed: false,
     answerStatus: [], // true/false per question
     userAnswers: [],  // user's answer per question
     submitted: false, showSheet: false,
@@ -188,20 +188,13 @@ Page({
     const q = this.db.list[idx];
     const userAns = this.data.userAnswers[idx] || '';
     const isChoice = q.type === '单选题' || q.type === '多选题';
-    // 有图则下载到本地
-    let imgSrc = '';
-    if (q.img) {
-      const url = `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/exam_${this.data.examId}_${q.page}.jpg`;
-      wx.downloadFile({
-        url: url, success: (r) => { if (r.statusCode===200) this.setData({currentImg: r.tempFilePath, examImgLoaded: true}); },
-        fail: () => { this.setData({ examImgLoaded: true }); }
-      });
-    }
+    // 有图则直接显示（image组件自动加载）
     this.setData({
       currentIdx: idx, qIndex: idx + 1,
       qType: q.type, qText: q.text, options: q.options || [],
       answer: q.answer || '', hasImage: !!q.img,
-      currentImg: imgSrc, imgPage: q.page,
+      currentImg: q.img ? `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/exam_${this.data.examId}_${q.page}.jpg` : '',
+      imgPage: q.page,
       userChoice: isChoice ? userAns : '',
       userInput: isChoice ? '' : userAns,
       examImgLoaded: false
@@ -262,7 +255,26 @@ Page({
     });
   },
 
-  onExamImgLoad() { this.setData({ examImgLoaded: true }); },
+  onExamImgLoad() { this.setData({ examImgLoaded: true, examImgFailed: false }); },
+
+  onExamImgError() {
+    if (!this.data.examImgFailed) {
+      // 切备用CDN
+      const oldUrl = this.data.currentImg;
+      const newUrl = oldUrl.replace('cdn.jsdelivr.net/gh/', 'raw.githubusercontent.com/').replace('@images-v1/', '/images-v1/');
+      this.setData({ currentImg: newUrl, examImgFailed: true, examImgLoaded: false });
+    } else {
+      this.setData({ examImgLoaded: true });
+      wx.showToast({ title: '图片加载失败', icon: 'none' });
+    }
+  },
+
+  retryExamImg() {
+    this.setData({
+      examImgFailed: false, examImgLoaded: false,
+      currentImg: `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/exam_${this.data.examId}_${this.data.imgPage}.jpg`
+    });
+  },
   goBack() { wx.navigateBack(); }
 });
 

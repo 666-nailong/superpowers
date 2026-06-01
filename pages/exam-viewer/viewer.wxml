@@ -9,10 +9,15 @@
   <scroll-view scroll-y class="scroll-area">
     <!-- 电路图图片 -->
     <view class="exam-img-wrapper" wx:if="{{hasImage}}">
-      <image class="exam-img" src="{{currentImg}}" mode="widthFix" show-menu-by-longpress="{{true}}" bindload="onExamImgLoad" binderror="onExamImgLoad"></image>
+      <image class="exam-img" src="{{currentImg}}" mode="widthFix" show-menu-by-longpress="{{true}}" bindload="onExamImgLoad" binderror="onExamImgError"></image>
       <view wx:if="{{!examImgLoaded}}" class="img-loading">
-        <view class="loading-spinner"></view>
-        <text>加载电路图中...</text>
+        <view wx:if="{{examImgFailed}}" class="img-retry" bindtap="retryExamImg">
+          <text>⚠️ 加载失败，点击重试</text>
+        </view>
+        <view wx:else>
+          <view class="loading-spinner"></view>
+          <text>加载电路图中...</text>
+        </view>
       </view>
     </view>
 
