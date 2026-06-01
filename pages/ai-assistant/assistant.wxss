@@ -142,3 +142,26 @@
   background: #1A365D;
   color: #fff;
 }
+
+/* 顶部栏 */
+.top-bar { display:flex; align-items:center; justify-content:space-between; padding:20rpx 24rpx; background:#1A365D; color:#fff; }
+.top-title { font-size:28rpx; font-weight:600; }
+.top-settings { font-size:28rpx; padding:8rpx; }
+
+/* 提示 */
+.api-tip { font-size:22rpx; color:#3B82F6; background:rgba(59,130,246,0.1); padding:12rpx 20rpx; border-radius:8rpx; margin:16rpx 0; }
+
+/* 设置面板 */
+.settings-mask { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:100; display:flex; align-items:center; justify-content:center; }
+.settings-panel { background:#fff; border-radius:16rpx; padding:40rpx; width:650rpx; max-height:80vh; }
+.settings-title { font-size:32rpx; font-weight:700; text-align:center; margin-bottom:32rpx; }
+.settings-field { position:relative; margin-bottom:24rpx; }
+.settings-label { font-size:24rpx; color:#4A5568; display:block; margin-bottom:8rpx; }
+.settings-input { width:100%; height:72rpx; background:#F7F8FA; border:2rpx solid #E2E8F0; border-radius:8rpx; padding:0 24rpx; font-size:26rpx; box-sizing:border-box; }
+.settings-toggle { position:absolute; right:16rpx; bottom:16rpx; font-size:28rpx; }
+.settings-hint { font-size:22rpx; color:#A0AEC0; margin-bottom:24rpx; line-height:1.5; }
+.settings-btns { display:flex; gap:16rpx; }
+.settings-btn { flex:1; text-align:center; padding:20rpx; border-radius:12rpx; font-size:28rpx; }
+.settings-btn.primary { background:#1A365D; color:#fff; }
+.settings-btn.secondary { background:#fff; color:#EF4444; border:2rpx solid #EF4444; }
+.settings-close { text-align:center; margin-top:16rpx; font-size:26rpx; color:#A0AEC0; padding:12rpx; }
