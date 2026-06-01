@@ -1,46 +1,54 @@
 <view class="container">
   <view class="header">
     <view class="back" bindtap="goBack">← 返回</view>
-    <view class="title">{{title}}</view>
-    <view class="info">{{page}} / {{total}}页 | {{totalQ}}题</view>
+    <view class="title">{{examTitle}}</view>
+    <view class="info">{{qIndex}}/{{totalQ}}题</view>
   </view>
 
   <scroll-view scroll-y class="scroll-area">
-    <!-- 原卷图片 -->
-    <view class="exam-section">
-      <view class="section-label">📄 原卷第{{page}}页</view>
-      <image class="page-img" src="{{currentSrc}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
-    </view>
+    <!-- 当前题目所在原卷页面 -->
+    <image class="exam-img" src="{{currentImg}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
+    <view class="img-label">原卷第{{imgPage}}页（红框为本题范围，仅供参考）</view>
 
-    <!-- 答题区 -->
-    <view class="answer-section">
-      <view class="section-label">✏️ 你的答案</view>
-      
-      <view wx:for="{{answers}}" wx:for-item="ans" wx:key="index" class="answer-item">
-        <view class="answer-num">{{ans.label}}</view>
-        <input class="answer-input" placeholder="{{ans.placeholder}}" bindinput="onInput" data-index="{{index}}" />
+    <!-- 题目卡片 -->
+    <view class="q-card">
+      <view class="q-header">
+        <text class="q-tag">{{qType}}</text>
+        <text class="q-num">第{{qIndex}}题 / 共{{totalQ}}题</text>
+      </view>
+      <view class="q-text">{{qText}}</view>
+
+      <!-- 答案输入 -->
+      <view wx:if="{{!answered}}" class="answer-area">
+        <input class="answer-input" placeholder="{{inputHint}}" bindinput="onAnswer" focus="{{autoFocus}}" />
+        <view class="submit-btn" bindtap="submitAnswer">提交答案</view>
       </view>
 
-      <view wx:if="{{answers.length === 0}}" class="empty-hint">
-        翻到下一页继续答题
-      </view>
-
-      <view class="submit-btn" bindtap="submitPage">提交本页答案</view>
-      
-      <view wx:if="{{showResult}}" class="result-area">
-        <view wx:for="{{results}}" wx:key="index" class="result-item {{item.correct ? 'correct' : 'wrong'}}">
-          <text class="result-label">{{item.label}}</text>
-          <text class="result-status">{{item.correct ? '✅' : '❌'}} {{item.userAnswer}}</text>
-          <text wx:if="{{item.correctAnswer}}" class="result-answer">正确答案：{{item.correctAnswer}}</text>
+      <!-- 批改结果 -->
+      <view wx:if="{{answered}}" class="result-area">
+        <view class="result-icon">{{isCorrect ? '✅' : '❌'}}</view>
+        <view class="result-text">
+          <view class="result-judge">{{isCorrect ? '回答正确！' : '回答错误'}}</view>
+          <view wx:if="!isCorrect" class="result-correct-answer">正确答案：{{correctAnswer}}</view>
+          <view wx:if="{{explanation}}" class="result-explanation">{{explanation}}</view>
         </view>
       </view>
     </view>
 
-    <!-- 翻页 -->
-    <view class="page-nav-row">
-      <view class="nav-btn {{page <= 1 ? 'disabled' : ''}}" bindtap="prev">◀ 上一页</view>
-      <view class="page-indicator">{{page}}/{{total}}</view>
-      <view class="nav-btn {{page >= total ? 'disabled' : ''}}" bindtap="next">下一页 ▶</view>
+    <!-- 下一题按钮 -->
+    <view wx:if="{{answered}}" class="next-btn primary-btn" bindtap="nextQuestion">
+      {{qIndex < totalQ ? '下一题 →' : '完成练习 🎉'}}
+    </view>
+
+    <!-- 完成页面 -->
+    <view wx:if="{{finished}}" class="finish-card">
+      <view class="finish-icon">🎉</view>
+      <view class="finish-title">练习完成！</view>
+      <view class="finish-stats">
+        <text>正确：{{correctCount}}/{{totalAnswered}}</text>
+        <text>正确率：{{accuracy}}%</text>
+      </view>
+      <view class="finish-btn secondary-btn" bindtap="goBack">返回题库</view>
     </view>
   </scroll-view>
 </view>
