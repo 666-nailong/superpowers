@@ -11,7 +11,11 @@
     <swiper class="page-swiper" current="{{currentIndex}}" bindchange="onSwiperChange" circular="{{false}}">
       <swiper-item wx:for="{{pageList}}" wx:key="page" class="swiper-slide">
         <view class="img-wrapper">
-          <image class="page-image" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}" bindtap="enterFullScreen" data-src="{{item.src}}"></image>
+          <image class="page-image" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}" bindtap="enterFullScreen" data-src="{{item.src}}" bindload="onImgLoad" data-index="{{index}}"></image>
+          <view wx:if="{{!item.loaded}}" class="img-loading">
+            <view class="loading-spinner"></view>
+            <text>加载中...</text>
+          </view>
         </view>
       </swiper-item>
     </swiper>

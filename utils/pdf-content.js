@@ -1,5 +1,5 @@
-// 本地图片（打包在项目内，无需网络）
+// jsDelivr CDN 已验证可用
 function getPageImageUrl(fileId, pageNum) {
-  return `/assets/pdf_pages/${fileId}/${pageNum}.jpg`;
+  return `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/assets/pdf_pages/${fileId}/${pageNum}.jpg`;
 }
 module.exports = { getPageImageUrl };
