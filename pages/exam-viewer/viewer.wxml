@@ -3,69 +3,79 @@
     <view class="back" bindtap="goBack">← 返回</view>
     <view class="title">{{examTitle}}</view>
     <view class="info">{{qIndex}}/{{totalQ}}题</view>
+    <view class="sheet-btn" bindtap="toggleSheet">📋</view>
   </view>
 
   <scroll-view scroll-y class="scroll-area">
-    <!-- 仅含电路图的题才显示原卷图片 -->
-    <view wx:if="{{hasImage}}" class="img-section">
-      <image class="exam-img" src="{{currentImg}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
-      <view class="img-label">↑ 题目电路图（原卷第{{imgPage}}页）</view>
-    </view>
+    <!-- 电路图图片 -->
+    <image wx:if="{{hasImage}}" class="exam-img" src="{{currentImg}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
 
-    <!-- 题目卡片 -->
+    <!-- 题目 -->
     <view class="q-card">
-      <view class="q-header">
-        <text class="q-tag">{{qType}}</text>
-        <text class="q-num">第{{qIndex}}题 / 共{{totalQ}}题</text>
-      </view>
+      <view class="q-tag">{{qType}}</view>
+      <view class="q-num-text">第{{qIndex}}题（共{{totalQ}}题）</view>
       <view class="q-text">{{qText}}</view>
 
-      <!-- 答案输入 -->
-      <view wx:if="{{!answered}}" class="answer-area">
-        <!-- 判断题：对/错按钮 -->
-        <view wx:if="{{qType === '判断题'}}" class="judge-btns">
-          <view class="judge-btn {{userInput === '对' ? 'selected' : ''}}" bindtap="setJudge" data-val="对">✅ 对</view>
-          <view class="judge-btn {{userInput === '错' ? 'selected' : ''}}" bindtap="setJudge" data-val="错">❌ 错</view>
+      <!-- 选项 -->
+      <view wx:if="{{options.length > 0}}" class="opt-list">
+        <view wx:for="{{options}}" wx:for-item="opt" wx:key="index"
+          class="opt-item {{userChoice === opt.key ? 'selected' : ''}} {{submitted ? (opt.key === correctKey ? 'correct' : (userChoice === opt.key ? 'wrong' : '')) : ''}}"
+          bindtap="selectOpt" data-key="{{opt.key}}">
+          <view class="opt-radio">{{userChoice === opt.key ? '●' : '○'}}</view>
+          <view class="opt-text"><text class="opt-label">{{opt.key}}.</text> {{opt.text}}</view>
         </view>
-
-        <!-- 选择题：选项按钮 -->
-        <view wx:elif="{{qType === '单选题' || qType === '多选题'}}" class="choice-btns">
-          <view wx:for="{{options}}" wx:key="*this" class="choice-btn {{userInput === item ? 'selected' : ''}}" bindtap="setChoice" data-val="{{item}}">{{item}}</view>
-        </view>
-
-        <!-- 其他题型：文本输入 -->
-        <view wx:else>
-          <input class="answer-input" placeholder="{{inputHint}}" bindinput="onAnswer" focus="{{autoFocus}}" />
-        </view>
-
-        <view class="submit-btn {{!canSubmit ? 'disabled' : ''}}" bindtap="submitAnswer">提交答案</view>
       </view>
 
-      <!-- 批改结果 -->
-      <view wx:if="{{answered}}" class="result-area">
-        <view class="result-icon">{{isCorrect ? '✅' : '❌'}}</view>
-        <view class="result-text">
-          <view class="result-judge">{{isCorrect ? '回答正确！' : '回答错误'}}</view>
-          <view wx:if="!isCorrect" class="result-correct-answer">正确答案：{{correctAnswer}}</view>
-          <view wx:if="{{explanation}}" class="result-explanation">{{explanation}}</view>
-        </view>
+      <!-- 判断题按钮 -->
+      <view wx:elif="{{qType === '判断题'}}" class="judge-row">
+        <view class="judge-opt {{userChoice === '对' ? 'selected' : ''}}" bindtap="selectJudge" data-val="对">✅ 对</view>
+        <view class="judge-opt {{userChoice === '错' ? 'selected' : ''}}" bindtap="selectJudge" data-val="错">❌ 错</view>
+      </view>
+
+      <!-- 填空/简答输入 -->
+      <view wx:else>
+        <input class="text-input" placeholder="输入答案..." bindinput="onInput" value="{{userInput}}" />
       </view>
     </view>
 
-    <!-- 下一题按钮 -->
-    <view wx:if="{{answered && !finished}}" class="next-btn primary-btn" bindtap="nextQuestion">
-      {{qIndex < totalQ ? '下一题 →' : '完成练习 🎉'}}
+    <!-- 导航栏 -->
+    <view class="nav-row">
+      <view class="nav-btn {{qIndex <= 1 ? 'disabled' : ''}}" bindtap="prevQ">◀ 上一题</view>
+      <view class="nav-dot {{answered ? 'done' : ''}}">{{answered ? '✅' : '⬜'}}</view>
+      <view class="nav-btn {{qIndex >= totalQ ? 'disabled' : ''}}" bindtap="nextQ">下一题 ▶</view>
     </view>
 
-    <!-- 完成页面 -->
-    <view wx:if="{{finished}}" class="finish-card">
-      <view class="finish-icon">🎉</view>
-      <view class="finish-title">练习完成！</view>
-      <view class="finish-stats">
-        <text>正确：{{correctCount}}/{{totalAnswered}}</text>
-        <text>正确率：{{accuracy}}%</text>
+    <!-- 提交全部按钮 -->
+    <view wx:if="{{!submitted && totalAnswered === totalQ}}" class="submit-all-btn primary-btn" bindtap="submitAll">📝 提交全部答案</view>
+
+    <!-- 成绩单 -->
+    <view wx:if="{{submitted}}" class="result-card">
+      <view class="result-title">📊 答题结果</view>
+      <view class="result-score">{{score}}分</view>
+      <view class="result-detail">正确 {{correctCount}}/{{totalQ}} 题（{{accuracy}}%）</view>
+      <view class="result-bar">
+        <view class="result-fill" style="width:{{accuracy}}%"></view>
       </view>
-      <view class="finish-btn secondary-btn" bindtap="goBack">返回题库</view>
+      <view wx:for="{{results}}" wx:key="index" class="result-item">
+        <text class="ri-status">{{item.correct ? '✅' : '❌'}}</text>
+        <text class="ri-num">第{{item.idx}}题</text>
+        <text class="ri-user">你的答案: {{item.userAnswer}}</text>
+        <text wx:if="!item.correct" class="ri-correct">正确答案: {{item.correctAnswer}}</text>
+      </view>
     </view>
   </scroll-view>
+
+  <!-- 答题卡弹出层 -->
+  <view wx:if="{{showSheet}}" class="sheet-mask" bindtap="toggleSheet">
+    <view class="sheet-panel" catchtap="">
+      <view class="sheet-title">答题卡</view>
+      <view class="sheet-grid">
+        <view wx:for="{{answerStatus}}" wx:key="index"
+          class="sheet-cell {{item ? 'done' : ''}} {{index + 1 === qIndex ? 'current' : ''}}"
+          bindtap="jumpTo" data-idx="{{index}}">{{index + 1}}</view>
+      </view>
+      <view class="sheet-info">已答 {{totalAnswered}}/{{totalQ}} 题</view>
+      <view class="sheet-close secondary-btn" bindtap="toggleSheet">关闭</view>
+    </view>
+  </view>
 </view>
