@@ -11,15 +11,14 @@
     <swiper class="page-swiper" current="{{currentIndex}}" bindchange="onSwiperChange" circular="{{false}}">
       <swiper-item wx:for="{{pageList}}" wx:key="page" class="swiper-slide">
         <view class="img-wrapper">
-          <image class="page-image" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}" bindtap="enterFullScreen" data-src="{{item.src}}" bindload="onImgLoad" binderror="onImgError" data-index="{{index}}"></image>
-          <view wx:if="{{!item.loaded}}" class="img-loading">
-            <view wx:if="{{item.failed}}" class="img-retry" bindtap="retryPage" data-index="{{index}}">
-              <text>⚠️ 加载失败，点击重试</text>
-            </view>
-            <view wx:else>
-              <view class="loading-spinner"></view>
-              <text>加载中...</text>
-            </view>
+          <image wx:if="{{item.src}}" class="page-image" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}" bindtap="enterFullScreen" data-src="{{item.src}}"></image>
+          <view wx:if="{{!item.loaded && !item.src}}" class="img-loading">
+            <view class="loading-spinner"></view>
+            <text>加载中...</text>
+          </view>
+          <view wx:elif="{{item.failed && !item.src}}" class="img-loading">
+            <text>⚠️ 加载失败</text>
+            <text class="img-retry" bindtap="retryPage" data-index="{{index}}">点击重试</text>
           </view>
         </view>
       </swiper-item>
