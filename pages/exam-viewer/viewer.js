@@ -5,7 +5,7 @@ Page({
     const total = parseInt(o.total) || 1;
     const pages = [];
     for (let i = 1; i <= total; i++) {
-      pages.push({ page: i, src: `../../assets/exam_pages/${examId}/${i}.jpg` });
+      pages.push({ page: i, src: `/assets/exam_pages/${examId}/${i}.jpg` });
     }
     this.setData({ examId, title: decodeURIComponent(o.title || '真题'), pages, total, page: 1 });
   },

@@ -27,7 +27,7 @@ Page({
     const totalPages = getPageCount(fileId) || 1;
     const pageList = [];
     for (let i = 1; i <= totalPages; i++) {
-      pageList.push({ page: i, src: `../../assets/pdf_pages/${fileId}/${i}.jpg` });
+      pageList.push({ page: i, src: `/assets/pdf_pages/${fileId}/${i}.jpg` });
     }
     this.setData({ fileId, title, totalPages, pageList, currentPage: 1, currentIndex: 0 });
     this.loadAnnCount();
@@ -212,7 +212,7 @@ Page({
     this.setData({
       currentPage: p,
       currentIndex: p - 1,
-      fullScreenSrc: `../../assets/pdf_pages/${this.data.fileId}/${p}.jpg`
+      fullScreenSrc: `/assets/pdf_pages/${this.data.fileId}/${p}.jpg`
     });
   },
   fsPrevPage() {
