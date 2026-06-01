@@ -109,28 +109,45 @@
 .fullscreen-image {
   width: 100%;
 }
-.fullscreen-close {
-  position: fixed;
-  top: 40rpx;
-  right: 32rpx;
-  width: 64rpx;
-  height: 64rpx;
-  background: rgba(0,0,0,0.5);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.fullscreen-close { display: none; }
+
+/* 全屏翻页热区 */
+.fs-prev-area {
+  position: fixed; top: 0; left: 0; width: 30%; bottom: 120rpx; z-index: 301;
+}
+.fs-next-area {
+  position: fixed; top: 0; right: 0; width: 30%; bottom: 120rpx; z-index: 301;
+}
+
+/* 全屏顶部栏 */
+.fs-top-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 40rpx 32rpx;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+  z-index: 302;
+}
+.fs-back {
+  width: 64rpx; height: 64rpx; background: rgba(0,0,0,0.5); color: #fff;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
   font-size: 36rpx;
 }
-.fullscreen-page {
-  position: fixed;
-  bottom: 60rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.5);
-  color: #fff;
-  padding: 12rpx 32rpx;
-  border-radius: 24rpx;
+.fs-page-info {
+  background: rgba(0,0,0,0.5); color: #fff; padding: 12rpx 28rpx; border-radius: 24rpx;
   font-size: 26rpx;
 }
+
+/* 全屏底部栏 */
+.fs-bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between;
+  padding: 32rpx;
+  padding-bottom: env(safe-area-inset-bottom, 32rpx);
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  z-index: 302;
+}
+.fs-btn {
+  color: #fff; font-size: 28rpx; padding: 16rpx 40rpx;
+  background: rgba(255,255,255,0.15); border-radius: 12rpx;
+}
+.fs-btn.disabled { opacity: 0.3; }

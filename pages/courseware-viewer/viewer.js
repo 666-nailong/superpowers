@@ -207,6 +207,20 @@ Page({
   exitFullScreen() {
     this.setData({ fullScreen: false, fullScreenSrc: '' });
   },
+  fsGoPage(page) {
+    const p = Math.max(1, Math.min(page, this.data.totalPages));
+    this.setData({
+      currentPage: p,
+      currentIndex: p - 1,
+      fullScreenSrc: `../../assets/pdf_pages/${this.data.fileId}/${p}.jpg`
+    });
+  },
+  fsPrevPage() {
+    if (this.data.currentPage > 1) this.fsGoPage(this.data.currentPage - 1);
+  },
+  fsNextPage() {
+    if (this.data.currentPage < this.data.totalPages) this.fsGoPage(this.data.currentPage + 1);
+  },
 
   goBack() { wx.navigateBack(); }
 });

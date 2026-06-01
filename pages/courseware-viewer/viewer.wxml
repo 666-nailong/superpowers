@@ -16,10 +16,20 @@
   </view>
 
   <!-- 全屏查看遮罩 -->
-  <view wx:if="{{fullScreen}}" class="fullscreen-mask" bindtap="exitFullScreen">
+  <view wx:if="{{fullScreen}}" class="fullscreen-mask">
     <image class="fullscreen-image" src="{{fullScreenSrc}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
-    <view class="fullscreen-close">✕</view>
-    <view class="fullscreen-page">{{currentPage}} / {{totalPages}}</view>
+    <!-- 左右半区切页 -->
+    <view class="fs-prev-area" bindtap="fsPrevPage"></view>
+    <view class="fs-next-area" bindtap="fsNextPage"></view>
+    <!-- 控制按钮 -->
+    <view class="fs-top-bar">
+      <view class="fs-back" bindtap="exitFullScreen">✕</view>
+      <view class="fs-page-info">{{currentPage}} / {{totalPages}}</view>
+    </view>
+    <view class="fs-bottom-bar">
+      <view class="fs-btn {{currentPage <= 1 ? 'disabled' : ''}}" bindtap="fsPrevPage">◀ 上一页</view>
+      <view class="fs-btn {{currentPage >= totalPages ? 'disabled' : ''}}" bindtap="fsNextPage">下一页 ▶</view>
+    </view>
   </view>
 
   <!-- 底部工具栏 -->
