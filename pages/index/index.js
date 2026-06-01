@@ -8,7 +8,8 @@ Page({
     studyHours: 0,
     recentActivities: [],
     chapters: [],
-    helpExpanded: { ai: false, study: false, feature: false }
+    helpExpanded: { ai: false, study: false, feature: false },
+    testResult: ''
   },
 
   onShow() {
@@ -52,6 +53,11 @@ Page({
       chapters
     });
   },
+
+  testImgLoad() { this.setData({ testResult: 'jsDelivr ✅' }); },
+  testImgError() { this.setData({ testResult: (this.data.testResult||'') + ' jsDelivr❌' }); },
+  testImgLoad2() { this.setData({ testResult: (this.data.testResult||'') + ' Google ✅' }); },
+  testImgError2() { this.setData({ testResult: (this.data.testResult||'') + ' Google❌' }); },
 
   toggleHelp(e) {
     const key = e.currentTarget.dataset.key;

@@ -88,6 +88,14 @@
     </view>
   </view>
 
+  <!-- 网络调试 -->
+  <view class="card" style="padding:16rpx;margin-bottom:16rpx;font-size:20rpx;color:#A0AEC0">
+    <text>网络测试:</text>
+    <image src="https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/assets/pdf_pages/ch01_01/1.jpg" style="width:100rpx;height:100rpx;display:inline-block" binderror="testImgError" bindload="testImgLoad"></image>
+    <image src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" style="width:100rpx;height:100rpx;display:inline-block" binderror="testImgError2" bindload="testImgLoad2"></image>
+    <text wx:if="{{testResult}}">{{testResult}}</text>
+  </view>
+
   <!-- 学习动态 -->
   <view class="section-title">学习动态</view>
   <view class="card">

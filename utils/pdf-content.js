@@ -1,6 +1,5 @@
-// 图片加载：尝试多个CDN源，直到成功
+// 本地图片（打包在项目内，无需网络）
 function getPageImageUrl(fileId, pageNum) {
-  // 主: GitHub raw 内容地址（比jsDelivr更稳定）
-  return `https://github.com/666-nailong/superpowers/raw/images-v1/assets/pdf_pages/${fileId}/${pageNum}.jpg`;
+  return `/assets/pdf_pages/${fileId}/${pageNum}.jpg`;
 }
 module.exports = { getPageImageUrl };
