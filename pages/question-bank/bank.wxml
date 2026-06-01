@@ -2,18 +2,18 @@
   <!-- 章节练习 -->
   <view class="section-title">📝 章节练习</view>
   <view class="card">
-    <view wx:for="{{chapters}}" wx:key="id" class="chapter-entry" data-id="{{item.id}}" data-title="{{item.title}}" bindtap="startChapter">
+    <view wx:for="{{chapters}}" wx:for-item="ch" wx:key="id" class="chapter-entry" data-id="{{ch.id}}" data-title="{{ch.title}}" bindtap="startChapter">
       <view class="chapter-left">
-        <view class="ch-num">{{order}}</view>
+        <view class="ch-num">{{ch.order}}</view>
         <view class="ch-info">
-          <view class="ch-title">{{title}}</view>
-          <view class="ch-progress">{{doneCount}}/{{totalCount}} 题已做</view>
+          <view class="ch-title">{{ch.title}}</view>
+          <view class="ch-progress">{{ch.doneCount}}/{{ch.totalCount}} 题已做</view>
         </view>
       </view>
       <view class="ch-right">
-        <view class="ch-percent">{{percent}}%</view>
+        <view class="ch-percent">{{ch.percent}}%</view>
         <view class="ch-bar">
-          <view class="ch-bar-fill" style="width: {{percent}}%"></view>
+          <view class="ch-bar-fill" style="width: {{ch.percent}}%"></view>
         </view>
       </view>
     </view>
@@ -22,11 +22,11 @@
   <!-- 真题专区 -->
   <view class="section-title">📋 真题专区</view>
   <view class="card exam-section">
-    <view wx:for="{{pastExams}}" wx:key="id" class="exam-entry" data-id="{{item.id}}" bindtap="startExam">
-      <view class="exam-icon">{{item.icon}}</view>
+    <view wx:for="{{pastExams}}" wx:for-item="ex" wx:key="id" class="exam-entry" data-id="{{ex.id}}" bindtap="startExam">
+      <view class="exam-icon">{{ex.icon}}</view>
       <view class="exam-info">
-        <view class="exam-title">{{item.title}}</view>
-        <view class="exam-meta">{{item.count}} 题</view>
+        <view class="exam-title">{{ex.title}}</view>
+        <view class="exam-meta">{{ex.count}} 题</view>
       </view>
       <view class="exam-arrow">›</view>
     </view>

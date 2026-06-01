@@ -69,13 +69,13 @@ const defaultQuestions = {
     ]}
   ],
   pastExams: [
-    { id: "exam2019", year: "2019", title: "2019-2020年期末试卷", questions: ["q001","q003","q007","q010","q012"] },
-    { id: "exam2020", year: "2020", title: "2020-2021年期末试卷", questions: ["q002","q004","q008","q011","q013"] },
-    { id: "exam2021", year: "2021", title: "2021-2022年期末试卷", questions: ["q005","q006","q009","q012","q014"] },
-    { id: "exam2022", year: "2022", title: "2022-2023年期末试卷", questions: ["q001","q007","q010","q011","q013"] },
-    { id: "exam2023", year: "2023", title: "2023-2024年期末试卷", questions: ["q002","q005","q008","q014","q009"] }
+    { id: "exam2019", year: "2019", title: "2019-2020年期末试卷", questions: ["q001","q003","q005","q007","q009","q011","q013","q100","q105","q110","q115","q120"] },
+    { id: "exam2020", year: "2020", title: "2020-2021年期末试卷", questions: ["q002","q004","q006","q008","q010","q012","q014","q101","q106","q111","q116","q121"] },
+    { id: "exam2021", year: "2021", title: "2021-2022年期末试卷", questions: ["q001","q005","q009","q013","q100","q102","q107","q112","q117","q122","q125","q130"] },
+    { id: "exam2022", year: "2022", title: "2022-2023年期末试卷", questions: ["q003","q007","q011","q014","q101","q103","q108","q113","q118","q123","q126","q131"] },
+    { id: "exam2023", year: "2023", title: "2023-2024年期末试卷", questions: ["q002","q006","q010","q012","q104","q109","q114","q119","q124","q127","q128","q129"] }
   ],
-  mockExamConfig: { questionCount: 10, timeLimit: 30, chapterRatio: { qch01: 0.15, qch02: 0.15, qch03: 0.10, qch04: 0.15, qch05: 0.15, qch06: 0.10, qch07: 0.10, qch08: 0.10 } }
+  mockExamConfig: { questionCount: 15, timeLimit: 45, chapterRatio: { qch01: 0.15, qch02: 0.15, qch03: 0.10, qch04: 0.15, qch05: 0.15, qch06: 0.10, qch07: 0.10, qch08: 0.10 } }
 };
 
 // ===== 默认公式数据 =====
