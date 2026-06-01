@@ -18,7 +18,8 @@ Page({
     showAnnListPage: false,
     allAnnotations: [],
     fullScreen: false,
-    fullScreenSrc: ''
+    fullScreenSrc: '',
+    showAIChat: false, aiMsgs: [], aiInputVal: ''
   },
 
   onLoad(options) {
@@ -181,22 +182,81 @@ Page({
     wx.showToast({ title: '批注不存在', icon: 'none' });
   },
 
-  // ===== AI提问 =====
-  askAI() {
-    wx.switchTab({ url: '/pages/ai-assistant/assistant' });
+  // ===== AI 内联聊天 =====
+  toggleAIChat() {
+    this.setData({ showAIChat: !this.data.showAIChat, aiInputVal: '' });
+    if (!this.data.showAIChat) {
+      // 关闭时清空对话
+      this.setData({ aiMsgs: [] });
+    }
+  },
+
+  onAiInput(e) { this.setData({ aiInputVal: e.detail.value }); },
+
+  aiSendSuggestion(e) {
+    const q = e.currentTarget.dataset.q;
+    this.aiSendMessageWithText(q);
+  },
+
+  aiSendMessage() {
+    const text = this.data.aiInputVal.trim();
+    if (!text) return;
+    this.aiSendMessageWithText(text);
+  },
+
+  aiSendMessageWithText(text) {
+    const msgs = [...this.data.aiMsgs, { role: 'user', content: text }];
+    this.setData({ aiMsgs: msgs, aiInputVal: '' });
+
+    // 加一条"思考中"
+    const msgs2 = [...msgs, { role: 'ai', content: '🤔 思考中...' }];
+    this.setData({ aiMsgs: msgs2 });
+
+    // 调用AI（与AI助手页相同的逻辑）
+    const apiKey = wx.getStorageSync('ai_api_key') || '';
+    const apiUrl = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com';
+    const apiModel = wx.getStorageSync('ai_api_model') || 'deepseek-chat';
+
+    if (apiKey) {
+      this.callAI(apiUrl, apiKey, apiModel, text);
+    } else {
+      this.usePreset(text);
+    }
+  },
+
+  callAI(apiUrl, apiKey, apiModel, question) {
+    wx.request({
+      url: apiUrl + '/v1/chat/completions',
+      method: 'POST',
+      header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+      data: {
+        model: apiModel,
+        messages: [
+          { role: 'system', content: '你是电路分析课程的辅导老师。用中文回答，可以包含公式推导。当前课件：' + this.data.title + '，第' + this.data.currentPage + '页。' },
+          { role: 'user', content: question }
+        ],
+        temperature: 0.7, max_tokens: 1500
+      },
+      success: (res) => {
+        const answer = (res.data && res.data.choices && res.data.choices[0]) ? res.data.choices[0].message.content : '（AI返回异常）';
+        this.updateAiLastMessage(answer);
+      },
+      fail: () => { this.updateAiLastMessage('⚠️ AI调用失败，请检查API设置'); }
+    });
+  },
+
+  usePreset(question) {
+    const { findAnswer } = require('../../utils/preset-answers');
     setTimeout(() => {
-      const context = `我在学习「${this.data.title}」第${this.data.currentPage}页，能帮我讲解一下吗？`;
-      const history = storage.getChatHistory();
-      if (history.length === 0 || history[history.length - 1].content !== context) {
-        history.push({
-          id: 'msg_' + Date.now(),
-          role: 'user',
-          content: context,
-          time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-        });
-        storage.setChatHistory(history);
-      }
+      const answer = findAnswer(question) || '关于第' + this.data.currentPage + '页的内容，建议查看课件或设置API Key获取更详细的解答。';
+      this.updateAiLastMessage(answer);
     }, 300);
+  },
+
+  updateAiLastMessage(content) {
+    const msgs = [...this.data.aiMsgs];
+    msgs[msgs.length - 1] = { role: 'ai', content };
+    this.setData({ aiMsgs: msgs });
   },
 
   // ===== 全屏查看 =====

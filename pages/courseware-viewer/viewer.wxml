@@ -41,8 +41,32 @@
     <view class="tool-btn primary" bindtap="addAnnotation">
       <text>✏️ 添加批注</text>
     </view>
-    <view class="tool-btn" bindtap="askAI">
-      <text>🤖 AI提问</text>
+    <view class="tool-btn" bindtap="toggleAIChat">
+      <text>🤖 AI</text>
+    </view>
+  </view>
+
+  <!-- AI 聊天面板（浮在工具栏上方） -->
+  <view wx:if="{{showAIChat}}" class="ai-chat-overlay">
+    <view class="ai-chat-panel">
+      <view class="ai-chat-header">
+        <text>🤖 电路分析AI助手</text>
+        <text class="ai-chat-close" bindtap="toggleAIChat">✕</text>
+      </view>
+      <scroll-view class="ai-chat-msgs" scroll-y scroll-into-view="ai-msg-{{aiMsgs.length-1}}">
+        <view wx:if="{{aiMsgs.length === 0}}" class="ai-chat-welcome">
+          <view>关于第{{currentPage}}页的内容，有什么问题吗？</view>
+          <view class="ai-chat-suggest" bindtap="aiSendSuggestion" data-q="解释一下这页的核心概念">解释一下这页的核心概念</view>
+          <view class="ai-chat-suggest" bindtap="aiSendSuggestion" data-q="这页有什么公式？">这页有什么公式？</view>
+        </view>
+        <view wx:for="{{aiMsgs}}" wx:key="id" class="ai-msg {{item.role}}" id="ai-msg-{{index}}">
+          <view class="ai-msg-text">{{item.content}}</view>
+        </view>
+      </scroll-view>
+      <view class="ai-chat-input-row">
+        <input class="ai-chat-input" placeholder="输入问题..." bindinput="onAiInput" value="{{aiInputVal}}" confirm-type="send" bindconfirm="aiSendMessage" />
+        <view class="ai-chat-send {{aiInputVal.trim() ? 'active' : ''}}" bindtap="aiSendMessage">发送</view>
+      </view>
     </view>
   </view>
 
