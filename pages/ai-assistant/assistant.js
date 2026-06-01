@@ -1,5 +1,6 @@
 const storage = require('../../utils/storage');
 const { findAnswer } = require('../../utils/preset-answers');
+const { findInPdfContent } = require('../../utils/local-qa');
 
 Page({
   data: {
@@ -94,12 +95,24 @@ Page({
       return;
     }
 
-    // 无API Key时使用预置问答库
+    // 无API Key时：本地PDF检索 → 预置问答库
     wx.showLoading({ title: '思考中...', mask: true });
     setTimeout(() => {
       wx.hideLoading();
-      const answer = findAnswer(question);
-      this.addMessage('assistant', answer || '🤔 关于"' + question + '"\n\n这是一个很好的问题！目前知识库中还没有直接匹配的答案。\n\n💡 建议设置 API Key 启用AI大模型回答，或换个问法试试。');
+      // 先尝试从课件PDF内容检索
+      const pdfAnswer = findInPdfContent(question);
+      if (pdfAnswer) {
+        this.addMessage('assistant', pdfAnswer);
+        return;
+      }
+      // 再尝试预置问答库
+      const presetAnswer = findAnswer(question);
+      if (presetAnswer) {
+        this.addMessage('assistant', presetAnswer);
+        return;
+      }
+      // 兜底回答
+      this.addMessage('assistant', '🤔 关于"' + question + '"\n\n这个问题我暂时没有现成答案。试试换个问法，或者在课件中查找相关内容。\n\n💡 也可以设置 API Key 启用AI大模型来回答。');
     }, 500);
   },
 

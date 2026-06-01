@@ -1,5 +1,6 @@
 const storage = require('../../utils/storage');
 const pageMap = require('../../utils/page-map');
+const { findInPdfContent } = require('../../utils/local-qa');
 
 function getPageCount(fileId) {
   const info = pageMap[fileId];
@@ -248,8 +249,11 @@ Page({
   usePreset(question) {
     const { findAnswer } = require('../../utils/preset-answers');
     setTimeout(() => {
-      const answer = findAnswer(question) || '关于第' + this.data.currentPage + '页的内容，建议查看课件或设置API Key获取更详细的解答。';
-      this.updateAiLastMessage(answer);
+      const pdfAnswer = findInPdfContent(question);
+      if (pdfAnswer) { this.updateAiLastMessage(pdfAnswer); return; }
+      const presetAnswer = findAnswer(question);
+      if (presetAnswer) { this.updateAiLastMessage(presetAnswer); return; }
+      this.updateAiLastMessage('关于第' + this.data.currentPage + '页的内容，建议查看课件或设置API Key获取更详细的解答。');
     }, 300);
   },
 
