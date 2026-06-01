@@ -9,6 +9,7 @@ Page({
     totalPages: 1,
     pageAnnotationCount: 0,
     currentAnnotations: [],
+    recentAnnotations: [],
     showAnnotationPanel: false,
     annotationInput: '',
     replyInputs: {}
@@ -17,14 +18,12 @@ Page({
   onLoad(options) {
     const fileId = options.fileId || '';
     const title = decodeURIComponent(options.title || '课件');
-
     this.setData({ fileId, title });
-
-    // 直接打开PDF
-    this.openPdf(fileId, title);
+    this.loadAnnotations();
   },
 
-  openPdf(fileId, title) {
+  openPdf(e) {
+    const fileId = e.currentTarget.dataset.fileid || this.data.fileId;
     const pdfUrl = pdfUrls[fileId];
     if (!pdfUrl) {
       wx.showToast({ title: '课件地址不存在', icon: 'none' });
@@ -37,7 +36,6 @@ Page({
       url: pdfUrl,
       success: (res) => {
         if (res.statusCode === 200) {
-          // 下载完成，用微信内置阅读器打开
           wx.openDocument({
             filePath: res.tempFilePath,
             showMenu: true,
@@ -45,11 +43,7 @@ Page({
             success: () => { wx.hideLoading(); },
             fail: (e) => {
               wx.hideLoading();
-              wx.showModal({
-                title: '打开失败',
-                content: 'PDF文件下载成功但打开失败',
-                showCancel: false
-              });
+              wx.showModal({ title: '打开失败', content: 'PDF文件下载成功但打开失败', showCancel: false });
             }
           });
         } else {
@@ -59,34 +53,16 @@ Page({
       },
       fail: (err) => {
         wx.hideLoading();
-        console.error('downloadFile fail:', err);
-        wx.showModal({
-          title: '无法连接PDF服务器',
-          content: '请确认本地PDF服务器是否在运行（127.0.0.1:8765）',
-          showCancel: false
-        });
+        wx.showModal({ title: '无法连接', content: '请检查网络后重试', showCancel: false });
       }
     });
   },
 
-  goBack() {
-    wx.navigateBack();
-  },
-
-  showAnnotations() {
-    this.setData({ showAnnotationPanel: true });
-    this.loadAnnotations();
-  },
-
-  hideAnnotations() {
-    this.setData({ showAnnotationPanel: false });
-  },
-
   loadAnnotations() {
     const key = `${this.data.fileId}_${this.data.currentPage}`;
-    const allAnnotations = storage.getAnnotations();
-    const pageAnns = allAnnotations[key] || { annotations: [] };
-    const sorted = (pageAnns.annotations || []).sort((a, b) => b.likes - a.likes);
+    const allAnn = storage.getAnnotations();
+    const pageAnns = (allAnn[key] || { annotations: [] }).annotations || [];
+    const sorted = pageAnns.sort((a, b) => b.likes - a.likes);
     const formatted = sorted.map(a => ({
       ...a,
       time: new Date(a.createdAt).toLocaleDateString('zh-CN'),
@@ -98,24 +74,24 @@ Page({
     }));
     this.setData({
       pageAnnotationCount: sorted.length,
-      currentAnnotations: formatted
+      currentAnnotations: formatted,
+      recentAnnotations: formatted.slice(0, 3)
     });
   },
 
-  onAnnotationInput(e) {
-    this.setData({ annotationInput: e.detail.value });
-  },
+  showAnnotations() { this.setData({ showAnnotationPanel: true }); },
+  hideAnnotations() { this.setData({ showAnnotationPanel: false }); },
+
+  onAnnotationInput(e) { this.setData({ annotationInput: e.detail.value }); },
 
   submitAnnotation() {
     const content = this.data.annotationInput.trim();
     if (!content) return;
-
     const key = `${this.data.fileId}_${this.data.currentPage}`;
-    const allAnnotations = storage.getAnnotations();
-    if (!allAnnotations[key]) {
-      allAnnotations[key] = { fileId: this.data.fileId, pageNum: this.data.currentPage, annotations: [] };
+    const allAnn = storage.getAnnotations();
+    if (!allAnn[key]) {
+      allAnn[key] = { fileId: this.data.fileId, pageNum: this.data.currentPage, annotations: [] };
     }
-
     const newAnn = {
       id: 'ann_' + Date.now(),
       userId: 'default_user',
@@ -126,20 +102,11 @@ Page({
       likedBy: [],
       replies: []
     };
-
-    allAnnotations[key].annotations.push(newAnn);
-    storage.setAnnotations(allAnnotations);
-
-    const myAnnotations = storage.getMyAnnotations();
-    myAnnotations.push({
-      annotationId: newAnn.id,
-      fileId: this.data.fileId,
-      pageNum: this.data.currentPage,
-      content,
-      createdAt: Date.now()
-    });
-    storage.setMyAnnotations(myAnnotations);
-
+    allAnn[key].annotations.push(newAnn);
+    storage.setAnnotations(allAnn);
+    const myAnn = storage.getMyAnnotations();
+    myAnn.push({ annotationId: newAnn.id, fileId: this.data.fileId, pageNum: this.data.currentPage, content, createdAt: Date.now() });
+    storage.setMyAnnotations(myAnn);
     this.setData({ annotationInput: '' });
     wx.showToast({ title: '批注已添加', icon: 'success' });
     this.loadAnnotations();
@@ -148,8 +115,8 @@ Page({
   likeAnnotation(e) {
     const { id } = e.currentTarget.dataset;
     const key = `${this.data.fileId}_${this.data.currentPage}`;
-    const allAnnotations = storage.getAnnotations();
-    const anns = allAnnotations[key];
+    const allAnn = storage.getAnnotations();
+    const anns = allAnn[key];
     if (!anns) return;
     const target = anns.annotations.find(a => a.id === id);
     if (!target) return;
@@ -161,39 +128,29 @@ Page({
       target.likedBy.push('default_user');
       target.likes++;
     }
-    storage.setAnnotations(allAnnotations);
+    storage.setAnnotations(allAnn);
     this.loadAnnotations();
   },
 
   onReplyInput(e) {
     const { id } = e.currentTarget.dataset;
-    const inputs = { ...this.data.replyInputs, [id]: e.detail.value };
-    this.setData({ replyInputs: inputs });
+    this.setData({ replyInputs: { ...this.data.replyInputs, [id]: e.detail.value } });
   },
 
   sendReply(e) {
     const { id } = e.currentTarget.dataset;
     const content = (this.data.replyInputs[id] || '').trim();
     if (!content) return;
-
     const key = `${this.data.fileId}_${this.data.currentPage}`;
-    const allAnnotations = storage.getAnnotations();
-    const anns = allAnnotations[key];
+    const allAnn = storage.getAnnotations();
+    const anns = allAnn[key];
     if (!anns) return;
     const target = anns.annotations.find(a => a.id === id);
     if (!target) return;
     if (!target.replies) target.replies = [];
-    target.replies.push({
-      id: 'rep_' + Date.now(),
-      userId: 'default_user',
-      userName: '匿名同学',
-      content,
-      createdAt: Date.now(),
-      likes: 0
-    });
-    storage.setAnnotations(allAnnotations);
-    const inputs = { ...this.data.replyInputs, [id]: '' };
-    this.setData({ replyInputs: inputs });
+    target.replies.push({ id: 'rep_' + Date.now(), userId: 'default_user', userName: '匿名同学', content, createdAt: Date.now(), likes: 0 });
+    storage.setAnnotations(allAnn);
+    this.setData({ replyInputs: { ...this.data.replyInputs, [id]: '' } });
     wx.showToast({ title: '回复成功', icon: 'success' });
     this.loadAnnotations();
   },
@@ -204,14 +161,11 @@ Page({
       const context = `我在学习「${this.data.title}」，能帮我讲解一下这部分吗？`;
       const history = storage.getChatHistory();
       if (history.length === 0 || history[history.length - 1].content !== context) {
-        history.push({
-          id: 'msg_' + Date.now(),
-          role: 'user',
-          content: context,
-          time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-        });
+        history.push({ id: 'msg_' + Date.now(), role: 'user', content: context, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) });
         storage.setChatHistory(history);
       }
     }, 300);
-  }
+  },
+
+  goBack() { wx.navigateBack(); }
 });
