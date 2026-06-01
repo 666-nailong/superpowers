@@ -193,7 +193,7 @@ Page({
       currentIdx: idx, qIndex: idx + 1,
       qType: q.type, qText: q.text, options: q.options || [],
       answer: q.answer || '', hasImage: !!q.img,
-      currentImg: q.img ? `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/exam_${this.data.examId}_${q.page}.jpg` : '',
+      currentImg: q.img ? `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/assets/exam_pages/${this.data.examId}/${q.page}.jpg` : '',
       imgPage: q.page,
       userChoice: isChoice ? userAns : '',
       userInput: isChoice ? '' : userAns,
