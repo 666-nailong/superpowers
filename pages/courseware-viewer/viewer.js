@@ -17,7 +17,7 @@ Page({
     currentIndex: 0,
     pageList: [],
     annCount: 0,
-    showAnnListPage: false,
+    showAnnPanel: false,
     allAnnotations: [],
     fullScreen: false,
     fullScreenSrc: '',
@@ -106,12 +106,12 @@ Page({
 
   // ===== 批注列表 =====
   showAnnList() {
-    this.setData({ showAnnListPage: true });
+    this.setData({ showAnnPanel: true });
     this.loadAllAnnotations();
   },
 
-  closeAnnList() {
-    this.setData({ showAnnListPage: false });
+  closeAnnPanel() {
+    this.setData({ showAnnPanel: false });
   },
 
   loadAllAnnotations() {

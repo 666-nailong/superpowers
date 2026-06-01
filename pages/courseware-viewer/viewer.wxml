@@ -40,7 +40,7 @@
 
   <!-- 底部工具栏 -->
   <view class="bottom-toolbar">
-    <view class="tool-btn" bindtap="showAnnList">
+    <view class="tool-btn" bindtap="showAnnPanel">
       <text>💬</text>
       <text class="tool-badge" wx:if="{{annCount > 0}}">{{annCount}}</text>
     </view>
@@ -76,31 +76,29 @@
     </view>
   </view>
 
-  <!-- 批注列表页（独立页面，不是弹出层） -->
-  <view wx:if="{{showAnnListPage}}" class="ann-page">
-    <view class="ann-page-header">
-      <text class="ann-page-back" bindtap="closeAnnList">← 返回</text>
-      <text>全部批注（{{annCount}}）</text>
-      <text class="ann-page-add" bindtap="addAnnotation">✏️</text>
-    </view>
-    <scroll-view scroll-y class="ann-page-body">
-      <view wx:if="{{allAnnotations.length === 0}}" style="padding:80rpx 0;text-align:center;color:#A0AEC0;font-size:28rpx">暂无批注</view>
-      <view wx:for="{{allAnnotations}}" wx:key="id" class="ann-card">
-        <view class="ann-card-header">
-          <text class="ann-card-user">{{item.userName}}</text>
-          <text class="ann-card-page">第{{item.pageNum}}页</text>
-          <text class="ann-card-time">{{item.time}}</text>
-          <text class="ann-card-like" bindtap="likeAnnotation" data-id="{{item.id}}" data-page="{{item.pageNum}}">
-            {{item.liked ? '❤️' : '🤍'}} {{item.likes}}
-          </text>
+  <!-- 批注浮动窗口 -->
+  <view wx:if="{{showAnnPanel}}" class="float-overlay">
+    <view class="float-panel">
+      <view class="float-header">
+        <text>💬 批注（{{annCount}}）</text>
+        <view class="float-actions">
+          <text bindtap="addAnnotation">✏️ 添加</text>
+          <text bindtap="closeAnnPanel" style="margin-left:20rpx">✕</text>
         </view>
-        <view class="ann-card-content">{{item.content}}</view>
-        <view wx:for="{{item.replies}}" wx:key="id" class="ann-reply">
-          <text class="ann-reply-user">{{item.userName}}：</text>
-          <text>{{item.content}}</text>
-        </view>
-        <view class="ann-card-reply" bindtap="replyAnnotation" data-id="{{item.id}}">💬 回复</view>
       </view>
-    </scroll-view>
+      <scroll-view scroll-y class="float-body">
+        <view wx:if="{{allAnnotations.length === 0}}" style="padding:40rpx 0;text-align:center;color:#A0AEC0;font-size:26rpx">暂无批注</view>
+        <view wx:for="{{allAnnotations}}" wx:key="id" class="float-item">
+          <view class="float-item-header">
+            <text class="float-item-user">{{item.userName}}</text>
+            <text class="float-item-page">第{{item.pageNum}}页</text>
+            <text class="float-item-like" bindtap="likeAnnotation" data-id="{{item.id}}" data-page="{{item.pageNum}}">{{item.liked ? '❤️' : '🤍'}} {{item.likes}}</text>
+          </view>
+          <view class="float-item-content">{{item.content}}</view>
+          <view wx:for="{{item.replies}}" wx:key="id" class="float-reply"><text class="float-reply-user">{{item.userName}}：</text>{{item.content}}</view>
+          <view class="float-item-reply" bindtap="replyAnnotation" data-id="{{item.id}}">💬 回复</view>
+        </view>
+      </scroll-view>
+    </view>
   </view>
 </view>
