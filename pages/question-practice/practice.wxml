@@ -14,6 +14,9 @@
       <text class="q-type-badge">{{questionTypeLabel}}</text>
       <text class="q-difficulty">{{difficultyStars}}</text>
     </view>
+    <!-- 题目图片（如真题原卷截图） -->
+    <image wx:if="{{question.image}}" class="q-image" src="{{question.image}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
+
     <view class="q-content">{{question.question}}</view>
 
     <!-- 选项 -->
