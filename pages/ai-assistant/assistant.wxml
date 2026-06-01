@@ -35,8 +35,8 @@
   </view>
 
   <!-- 设置弹窗 -->
-  <view wx:if="{{showSettingsPanel}}" class="settings-mask" catchtap="hideSettings">
-    <view class="settings-panel" catchtap="">
+  <view wx:if="{{showSettingsPanel}}" class="settings-mask">
+    <view class="settings-panel">
       <view class="settings-title">⚙️ AI 设置</view>
       
       <view class="settings-field">
