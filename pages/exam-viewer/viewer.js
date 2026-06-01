@@ -188,12 +188,20 @@ Page({
     const q = this.db.list[idx];
     const userAns = this.data.userAnswers[idx] || '';
     const isChoice = q.type === '单选题' || q.type === '多选题';
+    // 有图则下载到本地
+    let imgSrc = '';
+    if (q.img) {
+      const url = `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/exam_${this.data.examId}_${q.page}.jpg`;
+      wx.downloadFile({
+        url: url, success: (r) => { if (r.statusCode===200) this.setData({currentImg: r.tempFilePath, examImgLoaded: true}); },
+        fail: () => { this.setData({ examImgLoaded: true }); }
+      });
+    }
     this.setData({
       currentIdx: idx, qIndex: idx + 1,
       qType: q.type, qText: q.text, options: q.options || [],
       answer: q.answer || '', hasImage: !!q.img,
-      currentImg: q.img ? `https://cdn.jsdelivr.net/gh/666-nailong/superpowers@images-v1/exam_${this.data.examId}_${q.page}.jpg` : '',
-      imgPage: q.page,
+      currentImg: imgSrc, imgPage: q.page,
       userChoice: isChoice ? userAns : '',
       userInput: isChoice ? '' : userAns,
       examImgLoaded: false

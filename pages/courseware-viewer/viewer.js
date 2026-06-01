@@ -1,6 +1,6 @@
 const storage = require('../../utils/storage');
 const { findInPdfContent } = require('../../utils/local-qa');
-const { getPageImageUrl } = require('../../utils/pdf-content');
+const { getPageImageUrl, downloadImage } = require('../../utils/pdf-content');
 
 const pageCounts = { ch01_01:47, ch01_02:78, ch02_01:42, ch03_01:60, ch04_01:55, ch05_01:63, ch06_01:42, ch07_01:35, ch08_01:82 };
 function getPageCount(fileId) { return pageCounts[fileId] || 0; }
@@ -31,10 +31,28 @@ Page({
     }
     this.setData({ fileId, title, totalPages, pageList, currentPage: 1, currentIndex: 0 });
     this.loadAnnCount();
+    this.preloadPage(1);
+    this.preloadPage(2);
+  },
+
+  preloadPage(pageNum) {
+    if (pageNum < 1 || pageNum > this.data.totalPages) return;
+    const url = getPageImageUrl(this.data.fileId, pageNum);
+    const key = `pageList[${pageNum - 1}].src`;
+    const keyLoaded = `pageList[${pageNum - 1}].loaded`;
+    downloadImage(url).then((localPath) => {
+      this.setData({ [key]: localPath, [keyLoaded]: true });
+    }).catch(() => {
+      this.setData({ [key]: url, [keyLoaded]: true });
+    });
   },
 
   onSwiperChange(e) {
-    this.setData({ currentPage: e.detail.current + 1, currentIndex: e.detail.current });
+    const page = e.detail.current + 1;
+    this.setData({ currentPage: page, currentIndex: e.detail.current });
+    this.preloadPage(page);
+    this.preloadPage(page + 1); // 预加载下一页
+    this.preloadPage(page - 1); // 保持上一页缓存
   },
 
   onImgLoad(e) {
