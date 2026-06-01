@@ -1,0 +1,37 @@
+<view class="page-container">
+  <!-- 成绩卡片 -->
+  <view class="card result-card">
+    <view class="result-score">{{score}}</view>
+    <view class="result-label">得分</view>
+    <view class="result-stars">{{stars}}</view>
+    <view class="result-stats">
+      <text>正确 {{correctCount}}/{{totalCount}} 题</text>
+      <text> | </text>
+      <text>正确率 {{accuracy}}%</text>
+    </view>
+  </view>
+
+  <!-- 错题解析列表 -->
+  <view class="section-title">📋 题目解析</view>
+  <view wx:for="{{resultData}}" wx:key="index" class="card result-item">
+    <view class="ri-header">
+      <text class="ri-status">{{item.isCorrect ? '✅' : '❌'}}</text>
+      <text class="ri-num">第{{index + 1}}题</text>
+      <text class="ri-type">{{item.question.type === 'choice' ? '单选题' : item.question.type === 'judge' ? '判断题' : '填空题'}}</text>
+    </view>
+    <view class="ri-question">{{item.question.question}}</view>
+    <view wx:if="!item.isCorrect" class="ri-wrong">你的答案：{{getAnswerText(item.question, item.userAnswer)}}</view>
+    <view class="ri-correct">正确答案：{{getAnswerText(item.question, item.correctAnswer)}}</view>
+    <view class="ri-explanation">{{item.question.explanation}}</view>
+    <view class="ri-actions">
+      <text class="ri-btn" bindtap="addToWrong" data-index="{{index}}">📕 加入错题本</text>
+      <text class="ri-btn" bindtap="toggleFav" data-index="{{index}}">⭐ 收藏</text>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-actions">
+    <view class="secondary-btn" bindtap="goHome">返回首页</view>
+    <view class="primary-btn" bindtap="retry">重新答题</view>
+  </view>
+</view>

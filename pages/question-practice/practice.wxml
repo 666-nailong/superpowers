@@ -1,0 +1,69 @@
+<view class="page-container">
+  <!-- 顶部信息栏 -->
+  <view class="top-bar">
+    <view class="top-left">
+      <view class="top-title">{{chapterTitle}}</view>
+      <view class="top-progress">{{currentIndex + 1}} / {{questions.length}}</view>
+    </view>
+    <view wx:if="{{mode === 'exam' || mode === 'mock'}}" class="top-timer">{{timerDisplay}}</view>
+  </view>
+
+  <!-- 题目卡片 -->
+  <view class="card question-card">
+    <view class="q-header">
+      <text class="q-type-badge">{{questionTypeLabel}}</text>
+      <text class="q-difficulty">{{difficultyStars}}</text>
+    </view>
+    <view class="q-content">{{question.question}}</view>
+
+    <!-- 选项 -->
+    <view class="q-options">
+      <view wx:for="{{question.options || []}}" wx:key="*this"
+        class="q-option {{selectedIndex === index ? (isCorrect !== null ? (index === question.answer ? 'option-correct' : 'option-wrong') : 'option-selected') : ''}} {{isCorrect !== null && index === question.answer ? 'option-reveal-correct' : ''}}"
+        data-index="{{index}}" bindtap="selectOption">
+        <view class="option-radio">
+          <view wx:if="{{selectedIndex === index}}" class="radio-dot"></view>
+        </view>
+        <text class="option-text">{{item}}</text>
+        <text wx:if="{{isCorrect !== null && index === question.answer}}" class="option-mark">✓</text>
+        <text wx:if="{{isCorrect !== null && selectedIndex === index && !isCorrect}}" class="option-mark" style="color:var(--danger)">✗</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 解析（练习模式） -->
+  <view wx:if="{{isCorrect !== null && mode === 'practice'}}" class="card explanation-card">
+    <view class="explanation-title">{{isCorrect ? '✅ 回答正确' : '❌ 回答错误'}}</view>
+    <view class="explanation-answer">正确答案：{{correctAnswerText}}</view>
+    <view class="explanation-text">{{question.explanation}}</view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-bar">
+    <view class="bottom-inner">
+      <view class="nav-btn secondary-btn" bindtap="prevQuestion" wx:if="{{currentIndex > 0}}">上一题</view>
+      <view wx:if="{{mode === 'practice'}}" class="nav-btn secondary-btn" bindtap="toggleBookmark">
+        {{isBookmarked ? '★ 已收藏' : '☆ 收藏'}}
+      </view>
+      <view wx:if="{{mode === 'exam' || mode === 'mock'}}" class="nav-btn secondary-btn" bindtap="toggleBookmark" style="font-size:24rpx">
+        {{isBookmarked ? '★' : '☆'}}
+      </view>
+      <view class="nav-btn primary-btn {{currentIndex < questions.length - 1 ? '' : 'btn-disabled'}}" bindtap="nextQuestion">
+        {{currentIndex < questions.length - 1 ? '下一题' : '完成'}}
+      </view>
+      <view wx:if="{{currentIndex === questions.length - 1 && (mode === 'exam' || mode === 'mock')}}" class="nav-btn primary-btn" bindtap="submitExam" style="background:var(--success)">交卷</view>
+    </view>
+  </view>
+</view>
+
+<!-- 答题卡弹出层（考试模式） -->
+<view wx:if="{{showAnswerSheet}}" class="sheet-mask" bindtap="hideSheet">
+  <view class="sheet-panel" catchtap="">
+    <view class="sheet-title">答题卡</view>
+    <view class="sheet-grid">
+      <view wx:for="{{questions}}" wx:key="id" class="sheet-cell {{answeredMap[index] ? 'sheet-answered' : ''}} {{currentIndex === index ? 'sheet-current' : ''}}" data-index="{{index}}" bindtap="jumpToQuestion">{{index + 1}}</view>
+    </view>
+    <view class="sheet-info">已答：{{answeredCount}} / {{questions.length}}</view>
+    <view class="primary-btn" bindtap="submitExam">确认交卷</view>
+  </view>
+</view>

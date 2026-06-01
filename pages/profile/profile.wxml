@@ -1,0 +1,92 @@
+<view class="page-container">
+  <!-- 用户信息 -->
+  <view class="card profile-header">
+    <view class="profile-avatar">⚡</view>
+    <view class="profile-info">
+      <view class="profile-name">电路学习者</view>
+      <view class="profile-motto">好好学习，天天向上</view>
+    </view>
+  </view>
+
+  <!-- 学习统计 -->
+  <view class="section-title">📊 学习统计</view>
+  <view class="card">
+    <view class="stat-grid">
+      <view class="stat-item">
+        <view class="stat-val">{{stats.chaptersCompleted.length}} / {{totalChapters}}</view>
+        <view class="stat-lbl">已完成章节</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val">{{stats.totalQuestionsAnswered || 0}}</view>
+        <view class="stat-lbl">已做题目</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val">{{accuracy}}%</view>
+        <view class="stat-lbl">正确率</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val">{{studyHours}}h</view>
+        <view class="stat-lbl">累计时长</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val">{{stats.streakDays || 0}}</view>
+        <view class="stat-lbl">连续打卡</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val" style="color:var(--danger)">{{wrongBookCount}}</view>
+        <view class="stat-lbl">错题数</view>
+      </view>
+    </view>
+
+    <!-- 模拟考历史 -->
+    <view wx:if="{{mockHistory.length > 0}}" class="mock-history">
+      <view class="mock-history-title">模拟考试记录</view>
+      <view wx:for="{{mockHistory}}" wx:key="index" class="mock-record">
+        <text>{{item.date}}</text>
+        <text style="color:var(--primary);font-weight:600">{{item.score}}分</text>
+        <text style="color:var(--text-tertiary)">{{item.correctCount}}/{{item.totalQuestions}}正确</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="section-title">🔗 功能入口</view>
+  <view class="card">
+    <view class="menu-item" bindtap="goWrongBook">
+      <text class="menu-icon">📕</text>
+      <text class="menu-label">错题本</text>
+      <text class="menu-badge" wx:if="{{wrongBookCount > 0}}">{{wrongBookCount}}</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goFavorites">
+      <text class="menu-icon">⭐</text>
+      <text class="menu-label">我的收藏</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goMyAnnotations">
+      <text class="menu-icon">✏️</text>
+      <text class="menu-label">我的批注</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goCourseware">
+      <text class="menu-icon">📖</text>
+      <text class="menu-label">课件目录</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 设置 -->
+  <view class="section-title">⚙️ 设置</view>
+  <view class="card">
+    <view class="menu-item" bindtap="clearCache">
+      <text class="menu-icon">🗑</text>
+      <text class="menu-label">清除缓存</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item">
+      <text class="menu-icon">ℹ️</text>
+      <text class="menu-label">关于</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+</view>

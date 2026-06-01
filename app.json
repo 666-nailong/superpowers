@@ -1,0 +1,63 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/courseware/courseware",
+    "pages/courseware-viewer/viewer",
+    "pages/question-bank/bank",
+    "pages/question-practice/practice",
+    "pages/question-result/result",
+    "pages/wrong-book/wrong-book",
+    "pages/favorites/favorites",
+    "pages/formulas/formulas",
+    "pages/ai-assistant/assistant",
+    "pages/profile/profile",
+    "pages/my-annotations/annotations"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#1A365D",
+    "navigationBarTitleText": "电路分析学习助手",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F7F8FA",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#A0AEC0",
+    "selectedColor": "#1A365D",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "学习",
+        "iconPath": "assets/images/tab-study.png",
+        "selectedIconPath": "assets/images/tab-study-active.png"
+      },
+      {
+        "pagePath": "pages/question-bank/bank",
+        "text": "题库",
+        "iconPath": "assets/images/tab-quiz.png",
+        "selectedIconPath": "assets/images/tab-quiz-active.png"
+      },
+      {
+        "pagePath": "pages/formulas/formulas",
+        "text": "公式",
+        "iconPath": "assets/images/tab-formula.png",
+        "selectedIconPath": "assets/images/tab-formula-active.png"
+      },
+      {
+        "pagePath": "pages/ai-assistant/assistant",
+        "text": "AI",
+        "iconPath": "assets/images/tab-ai.png",
+        "selectedIconPath": "assets/images/tab-ai-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/images/tab-mine.png",
+        "selectedIconPath": "assets/images/tab-mine-active.png"
+      }
+    ]
+  },
+  "requiredBackgroundModes": [],
+  "sitemapLocation": "sitemap.json"
+}

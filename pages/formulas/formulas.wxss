@@ -1,0 +1,58 @@
+.page-container {
+  padding: 0 32rpx;
+  padding-bottom: 120rpx;
+  padding-top: 32rpx;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+.search-icon { font-size: 28rpx; margin-right: 16rpx; }
+.search-input { flex: 1; font-size: 28rpx; }
+.search-clear { font-size: 28rpx; color: #A0AEC0; padding: 8rpx; }
+
+.formula-category { margin-bottom: 8rpx; }
+.formula-item {
+  padding: 24rpx 0;
+  border-bottom: 2rpx solid #E2E8F0;
+}
+.formula-item:last-child { border-bottom: none; }
+.formula-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.formula-latex {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1A365D;
+  font-family: 'Times New Roman', serif;
+  padding: 8rpx 0;
+}
+.formula-fav {
+  font-size: 36rpx;
+  color: #A0AEC0;
+  padding: 8rpx;
+}
+.formula-fav.fav-active { color: #F59E0B; }
+.formula-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-top: 8rpx;
+}
+.formula-desc {
+  font-size: 24rpx;
+  color: #4A5568;
+  margin-top: 8rpx;
+  line-height: 1.5;
+}
+.formula-tags {
+  margin-top: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+}

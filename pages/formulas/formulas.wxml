@@ -1,0 +1,38 @@
+<view class="page-container">
+  <!-- 搜索框 -->
+  <view class="search-box">
+    <text class="search-icon">🔍</text>
+    <input class="search-input" placeholder="搜索公式..." bindinput="onSearchInput" bindconfirm="doSearch" />
+    <text wx:if="{{searchQuery}}" class="search-clear" bindtap="clearSearch">✕</text>
+  </view>
+
+  <!-- 搜索结果 -->
+  <view wx:if="{{searchQuery}}" class="card search-results">
+    <view wx:if="{{searchResults.length === 0}}" class="empty-state">未找到匹配的公式</view>
+    <view wx:for="{{searchResults}}" wx:key="id" class="formula-item">
+      <view class="formula-latex">{{item.latex}}</view>
+      <view class="formula-title">{{item.title}}</view>
+      <view class="formula-desc">{{item.description}}</view>
+    </view>
+  </view>
+
+  <!-- 分类列表 -->
+  <view wx:for="{{categories}}" wx:key="id" class="formula-category">
+    <view class="section-title">{{item.title}}</view>
+    <view class="card">
+      <view wx:for="{{item.formulas}}" wx:key="id" class="formula-item" data-id="{{item.id}}" bindtap="toggleFavorite">
+        <view class="formula-header">
+          <view class="formula-latex">{{item.latex}}</view>
+          <view class="formula-fav {{item.favorited ? 'fav-active' : ''}}">
+            {{item.favorited ? '★' : '☆'}}
+          </view>
+        </view>
+        <view class="formula-title">{{item.title}}</view>
+        <view class="formula-desc">{{item.description}}</view>
+        <view wx:if="{{item.tags}}" class="formula-tags">
+          <text wx:for="{{item.tags}}" wx:key="*this" class="tag tag-primary">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

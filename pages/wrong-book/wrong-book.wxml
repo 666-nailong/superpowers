@@ -1,0 +1,44 @@
+<view class="page-container">
+  <!-- 统计 -->
+  <view class="card stats-bar">
+    <view>错题总数：<text style="color:var(--danger);font-weight:700">{{wrongBook.length}}</text></view>
+    <view>已掌握：<text style="color:var(--success);font-weight:700">{{masteredCount}}</text></view>
+  </view>
+
+  <!-- 筛选 -->
+  <view class="filter-bar">
+    <view wx:for="{{filterOptions}}" wx:key="id"
+      class="filter-item {{currentFilter === id ? 'filter-active' : ''}}"
+      data-id="{{id}}" bindtap="changeFilter">{{label}}</view>
+  </view>
+
+  <!-- 章节筛选 -->
+  <picker mode="selector" range="{{chapterPicker}}" bindchange="changeChapter">
+    <view class="card chapter-selector">
+      <text>{{selectedChapterLabel}}</text>
+      <text style="color:var(--text-tertiary)">▼</text>
+    </view>
+  </picker>
+
+  <!-- 错题列表 -->
+  <view wx:if="{{filteredList.length === 0}}" class="empty-state">
+    <view>🎉 没有错题，继续保持！</view>
+  </view>
+
+  <view wx:for="{{filteredList}}" wx:key="questionId" class="card wrong-item">
+    <view class="wi-header">
+      <text class="wi-index">#{{index + 1}}</text>
+      <text class="wi-diff">{{item.diffStars}}</text>
+      <text class="wi-status {{item.mastered ? 'wi-mastered' : 'wi-not-mastered'}}">{{item.mastered ? '已掌握' : '未掌握'}}</text>
+    </view>
+    <view class="wi-question">{{item.question}}</view>
+    <view class="wi-meta">答错次数：{{item.wrongTimes}} 次 | 最后答错：{{item.lastWrongDate}}</view>
+    <view class="wi-actions">
+      <view class="wi-btn" bindtap="retryOne" data-id="{{item.questionId}}">重做此题</view>
+      <view class="wi-btn" bindtap="toggleMastered" data-id="{{item.questionId}}">{{item.mastered ? '标记未掌握' : '标记已掌握'}}</view>
+      <view class="wi-btn" style="color:var(--danger)" bindtap="removeWrong" data-id="{{item.questionId}}">移除</view>
+    </view>
+  </view>
+
+  <view wx:if="{{filteredList.length > 1}}" class="retry-all-btn primary-btn" bindtap="retryAll">重做全部错题</view>
+</view>

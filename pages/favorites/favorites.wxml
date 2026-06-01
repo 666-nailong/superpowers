@@ -1,0 +1,44 @@
+<view class="page-container">
+  <!-- Tab 切换 -->
+  <view class="fav-tabs">
+    <view class="fav-tab {{activeTab === 'questions' ? 'tab-active' : ''}}" bindtap="switchTab" data-tab="questions">
+      题目 {{favQuestions.length}}
+    </view>
+    <view class="fav-tab {{activeTab === 'formulas' ? 'tab-active' : ''}}" bindtap="switchTab" data-tab="formulas">
+      公式 {{favFormulas.length}}
+    </view>
+  </view>
+
+  <!-- 题目列表 -->
+  <view wx:if="{{activeTab === 'questions'}}" class="fav-list">
+    <view wx:if="{{favQuestions.length === 0}}" class="empty-state">
+      <view>还没有收藏题目</view>
+      <view class="empty-hint">在答题页面点击 ☆ 收藏题目</view>
+    </view>
+    <view wx:for="{{favQuestions}}" wx:key="id" class="card fav-item">
+      <view class="q-type">{{item.type === 'choice' ? '单选' : item.type === 'judge' ? '判断' : '填空'}}</view>
+      <view class="q-text">{{item.question}}</view>
+      <view class="q-meta">收藏于 {{item.favDate}}</view>
+      <view class="q-actions">
+        <view class="fav-btn" bindtap="doQuestion" data-id="{{item.id}}">去答题</view>
+        <view class="fav-btn del-btn" bindtap="removeFav" data-id="{{item.id}}">取消收藏</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 公式列表 -->
+  <view wx:if="{{activeTab === 'formulas'}}" class="fav-list">
+    <view wx:if="{{favFormulas.length === 0}}" class="empty-state">
+      <view>还没有收藏公式</view>
+      <view class="empty-hint">在公式速查页面点击 ☆ 收藏公式</view>
+    </view>
+    <view wx:for="{{favFormulas}}" wx:key="id" class="card fav-item">
+      <view class="formula-latex">{{item.latex}}</view>
+      <view class="formula-title">{{item.title}}</view>
+      <view class="formula-desc">{{item.description}}</view>
+      <view class="q-actions">
+        <view class="fav-btn del-btn" bindtap="removeFavFormula" data-id="{{item.id}}">取消收藏</view>
+      </view>
+    </view>
+  </view>
+</view>

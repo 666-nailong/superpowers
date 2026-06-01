@@ -1,0 +1,27 @@
+<view class="page-container">
+  <view class="section-title">✏️ 我的批注</view>
+
+  <view wx:if="{{annotations.length === 0}}" class="empty-state">
+    <view>还没有发表过批注</view>
+    <view class="empty-hint">在课件阅读页面可以添加批注</view>
+  </view>
+
+  <view wx:for="{{annotations}}" wx:key="annotationId" class="card ann-card">
+    <view class="ann-header">
+      <view class="ann-source">
+        <text class="ann-file">{{item.fileTitle || item.fileId}}</text>
+        <text class="ann-page">第{{item.pageNum}}页</text>
+      </view>
+      <view class="ann-date">{{item.date}}</view>
+    </view>
+    <view class="ann-body">"{{item.content}}"</view>
+    <view class="ann-actions">
+      <view class="ann-action" bindtap="gotoPage" data-fileid="{{item.fileId}}" data-pagenum="{{item.pageNum}}">
+        📖 查看原文
+      </view>
+      <view class="ann-action del-action" bindtap="deleteAnnotation" data-id="{{item.annotationId}}" data-fileid="{{item.fileId}}" data-pagenum="{{item.pageNum}}">
+        🗑 删除
+      </view>
+    </view>
+  </view>
+</view>

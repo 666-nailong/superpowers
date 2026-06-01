@@ -1,0 +1,49 @@
+.page-container {
+  padding: 0 32rpx;
+  padding-bottom: 100rpx;
+  padding-top: 32rpx;
+}
+.fav-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32rpx;
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+.fav-tab {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx;
+  font-size: 28rpx;
+  color: #4A5568;
+}
+.tab-active {
+  background: #1A365D;
+  color: #fff;
+  font-weight: 600;
+}
+.fav-item {
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+}
+.q-type {
+  font-size: 22rpx;
+  color: #1A365D;
+  margin-bottom: 8rpx;
+}
+.q-text { font-size: 28rpx; line-height: 1.6; margin-bottom: 12rpx; }
+.q-meta { font-size: 22rpx; color: #A0AEC0; margin-bottom: 12rpx; }
+.q-actions { display: flex; gap: 24rpx; }
+.fav-btn { font-size: 24rpx; color: #1A365D; }
+.del-btn { color: #EF4444; }
+
+.formula-latex {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1A365D;
+  font-family: 'Times New Roman', serif;
+  margin-bottom: 8rpx;
+}
+.formula-title { font-size: 28rpx; font-weight: 500; }
+.formula-desc { font-size: 24rpx; color: #4A5568; margin-top: 6rpx; }

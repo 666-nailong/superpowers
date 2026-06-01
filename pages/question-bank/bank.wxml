@@ -1,0 +1,49 @@
+<view class="page-container">
+  <!-- 章节练习 -->
+  <view class="section-title">📝 章节练习</view>
+  <view class="card">
+    <view wx:for="{{chapters}}" wx:key="id" class="chapter-entry" data-id="{{item.id}}" data-title="{{item.title}}" bindtap="startChapter">
+      <view class="chapter-left">
+        <view class="ch-num">{{order}}</view>
+        <view class="ch-info">
+          <view class="ch-title">{{title}}</view>
+          <view class="ch-progress">{{doneCount}}/{{totalCount}} 题已做</view>
+        </view>
+      </view>
+      <view class="ch-right">
+        <view class="ch-percent">{{percent}}%</view>
+        <view class="ch-bar">
+          <view class="ch-bar-fill" style="width: {{percent}}%"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 真题专区 -->
+  <view class="section-title">📋 真题专区</view>
+  <view class="card exam-section">
+    <view wx:for="{{pastExams}}" wx:key="id" class="exam-entry" data-id="{{item.id}}" bindtap="startExam">
+      <view class="exam-icon">{{item.icon}}</view>
+      <view class="exam-info">
+        <view class="exam-title">{{item.title}}</view>
+        <view class="exam-meta">{{item.count}} 题</view>
+      </view>
+      <view class="exam-arrow">›</view>
+    </view>
+    <view wx:if="{{pastExams.length === 0}}" class="empty-state">暂无真题数据</view>
+  </view>
+
+  <!-- 模拟考试 -->
+  <view class="section-title">📊 模拟考试</view>
+  <view class="card mock-section">
+    <view class="mock-info">
+      <view class="mock-icon">🎯</view>
+      <view class="mock-detail">
+        <view class="mock-title">随机组卷，限时答题</view>
+        <view class="mock-meta">每次 20 题，60 分钟</view>
+        <view wx:if="{{lastMockScore > 0}}" class="mock-last">上次成绩: {{lastMockScore}} 分</view>
+      </view>
+    </view>
+    <view class="primary-btn mock-start" bindtap="startMock">开始模拟考试</view>
+  </view>
+</view>

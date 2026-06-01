@@ -1,0 +1,91 @@
+<view class="page-container">
+  <!-- 顶部导航 -->
+  <view class="viewer-header">
+    <view class="viewer-back" bindtap="goBack">← 返回</view>
+    <view class="viewer-title">{{title}}</view>
+    <view class="viewer-page">{{currentPage}} / {{totalPages}}</view>
+  </view>
+
+  <!-- 课件内容区域（模拟PDF页面展示） -->
+  <scroll-view class="content-area" scroll-y enhanced>
+    <view class="page-display">
+      <!-- 课件页面模拟（实际开发中替换为PDF渲染） -->
+      <view class="courseware-page">
+        <view class="page-placeholder">
+          <view class="page-header-text">{{title}}</view>
+          <view class="page-divider"></view>
+          <view wx:for="{{pageContent}}" wx:key="*this" class="page-line">{{item}}</view>
+        </view>
+      </view>
+
+      <!-- 批注标记 -->
+      <view class="annotation-badge" wx:if="{{pageAnnotationCount > 0}}" bindtap="showAnnotations">
+        <text class="badge-text">{{pageAnnotationCount}}</text>
+        <text class="badge-label">条批注</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 翻页导航 -->
+  <view class="page-nav">
+    <view class="nav-btn-small {{currentPage <= 1 ? 'disabled' : ''}}" bindtap="prevPage">◀ 上一页</view>
+    <view class="page-indicator">{{currentPage}} / {{totalPages}}</view>
+    <view class="nav-btn-small {{currentPage >= totalPages ? 'disabled' : ''}}" bindtap="nextPage">下一页 ▶</view>
+  </view>
+
+  <!-- 批注面板（从底部弹出） -->
+  <view wx:if="{{showAnnotationPanel}}" class="annotation-mask" bindtap="hideAnnotations">
+    <view class="annotation-panel" catchtap="">
+      <view class="panel-header">
+        <text class="panel-title">批注（{{pageAnnotationCount}}）</text>
+        <text class="panel-close" bindtap="hideAnnotations">✕</text>
+      </view>
+
+      <scroll-view class="panel-body" scroll-y>
+        <view wx:if="{{currentAnnotations.length === 0}}" class="empty-state">
+          <view style="color:var(--text-tertiary)">暂无批注</view>
+        </view>
+
+        <view wx:for="{{currentAnnotations}}" wx:key="id" class="annotation-item">
+          <view class="ann-header">
+            <text class="ann-user">{{item.userName}}</text>
+            <text class="ann-time">{{item.time}}</text>
+            <text class="ann-likes" bindtap="likeAnnotation" data-id="{{item.id}}">
+              {{item.liked ? '❤️' : '🤍'}} {{item.likes}}
+            </text>
+          </view>
+          <view class="ann-content">{{item.content}}</view>
+
+          <!-- 回复列表 -->
+          <view wx:for="{{item.replies}}" wx:key="id" class="reply-item">
+            <text class="reply-user">{{item.userName}}：</text>
+            <text class="reply-text">{{item.content}}</text>
+          </view>
+
+          <!-- 回复输入 -->
+          <view class="reply-input-row">
+            <input class="reply-input" placeholder="回复..." bindinput="onReplyInput" data-id="{{item.id}}" />
+            <text class="reply-send" bindtap="sendReply" data-id="{{item.id}}">发送</text>
+          </view>
+        </view>
+      </scroll-view>
+
+      <!-- 添加批注 -->
+      <view class="add-annotation">
+        <input class="ann-input" placeholder="添加批注（最多200字）" maxlength="200" bindinput="onAnnotationInput" />
+        <view class="ann-submit primary-btn" bindtap="submitAnnotation">提交</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI提问悬浮按钮 -->
+  <view class="ai-float-btn" bindtap="askAI">
+    <text class="ai-float-icon">🤖</text>
+    <text class="ai-float-label">AI提问</text>
+  </view>
+
+  <!-- 添加批注浮动按钮 -->
+  <view class="add-ann-float-btn" bindtap="quickAddAnnotation">
+    <text class="add-ann-icon">✏️</text>
+  </view>
+</view>

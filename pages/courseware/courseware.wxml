@@ -1,0 +1,24 @@
+<view class="page-container">
+  <view class="section-title">📖 课件目录</view>
+
+  <view wx:for="{{chapters}}" wx:key="id" class="card chapter-card">
+    <view class="ch-header" bindtap="toggleChapter" data-id="{{item.id}}">
+      <view class="ch-title-wrap">
+        <text class="ch-num-badge">{{item.order}}</text>
+        <text class="ch-title-text">{{item.title}}</text>
+      </view>
+      <view class="ch-toggle {{item.expanded ? 'expanded' : ''}}">›</view>
+    </view>
+
+    <view wx:if="{{item.expanded}}" class="ch-files">
+      <view wx:for="{{item.files}}" wx:key="id" class="file-item" data-fileid="{{item.id}}" data-title="{{item.title}}" bindtap="openFile">
+        <view class="file-icon">📄</view>
+        <view class="file-info">
+          <view class="file-title">{{item.title}}</view>
+          <view class="file-meta">{{item.totalPages || '--'}} 页</view>
+        </view>
+        <view class="file-arrow">›</view>
+      </view>
+    </view>
+  </view>
+</view>

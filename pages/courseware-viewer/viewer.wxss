@@ -1,0 +1,204 @@
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 0;
+  background: #FFFFFF;
+  position: relative;
+}
+
+.viewer-header {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: #1A365D;
+  color: #fff;
+}
+.viewer-back { font-size: 26rpx; padding: 8rpx 16rpx; }
+.viewer-title { flex: 1; font-size: 28rpx; text-align: center; margin: 0 16rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-page { font-size: 24rpx; }
+
+.content-area {
+  flex: 1;
+  padding: 24rpx;
+}
+
+.page-display { position: relative; }
+
+.courseware-page {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 48rpx 36rpx;
+  min-height: 70vh;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+}
+.page-header-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1A365D;
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+.page-divider {
+  height: 2rpx;
+  background: #E2E8F0;
+  margin-bottom: 32rpx;
+}
+.page-line {
+  font-size: 28rpx;
+  line-height: 2;
+  color: #1A202C;
+  text-indent: 2em;
+  margin-bottom: 8rpx;
+}
+
+/* 批注标记 */
+.annotation-badge {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  background: rgba(245, 158, 11, 0.95);
+  border-radius: 24rpx;
+  padding: 8rpx 16rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+.badge-text { font-size: 28rpx; font-weight: 700; color: #fff; }
+.badge-label { font-size: 20rpx; color: rgba(255,255,255,0.9); }
+
+/* 翻页 */
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 24rpx;
+  background: #F7F8FA;
+  border-top: 2rpx solid #E2E8F0;
+}
+.nav-btn-small {
+  padding: 12rpx 24rpx;
+  font-size: 24rpx;
+  color: #1A365D;
+}
+.nav-btn-small.disabled { color: #A0AEC0; }
+.page-indicator { font-size: 24rpx; color: #4A5568; }
+
+/* 批注面板 */
+.annotation-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+}
+.annotation-panel {
+  background: #FFFFFF;
+  border-radius: 16rpx 16rpx 0 0;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  border-bottom: 2rpx solid #E2E8F0;
+}
+.panel-title { font-size: 30rpx; font-weight: 600; }
+.panel-close { font-size: 32rpx; color: #A0AEC0; padding: 4rpx 12rpx; }
+.panel-body {
+  flex: 1;
+  padding: 16rpx 32rpx;
+  max-height: 500rpx;
+}
+.annotation-item {
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #E2E8F0;
+}
+.ann-header { display: flex; align-items: center; margin-bottom: 8rpx; }
+.ann-user { font-size: 24rpx; font-weight: 600; color: #1A365D; margin-right: 12rpx; }
+.ann-time { font-size: 20rpx; color: #A0AEC0; flex: 1; }
+.ann-likes { font-size: 24rpx; }
+.ann-content { font-size: 26rpx; line-height: 1.6; margin-bottom: 12rpx; }
+
+.reply-item {
+  background: #F7F8FA;
+  border-radius: 8rpx;
+  padding: 12rpx 16rpx;
+  margin-bottom: 8rpx;
+  font-size: 24rpx;
+}
+.reply-user { color: #1A365D; }
+.reply-text { color: #4A5568; }
+
+.reply-input-row {
+  display: flex;
+  gap: 8rpx;
+  margin-top: 8rpx;
+}
+.reply-input {
+  flex: 1;
+  height: 56rpx;
+  background: #F7F8FA;
+  border-radius: 8rpx;
+  padding: 0 16rpx;
+  font-size: 24rpx;
+}
+.reply-send { font-size: 24rpx; color: #1A365D; padding: 12rpx; }
+
+.add-annotation {
+  display: flex;
+  gap: 16rpx;
+  padding: 20rpx 32rpx;
+  border-top: 2rpx solid #E2E8F0;
+}
+.ann-input {
+  flex: 1;
+  height: 72rpx;
+  background: #F7F8FA;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+}
+.ann-submit { padding: 16rpx 40rpx; font-size: 26rpx; }
+
+/* AI提问浮动按钮 */
+.ai-float-btn {
+  position: fixed;
+  right: 32rpx;
+  bottom: 160rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: #1A365D;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 20rpx rgba(26,54,93,0.3);
+  z-index: 50;
+}
+.ai-float-icon { font-size: 36rpx; }
+.ai-float-label { font-size: 18rpx; margin-top: 4rpx; }
+
+/* 添加批注浮动按钮 */
+.add-ann-float-btn {
+  position: fixed;
+  right: 32rpx;
+  bottom: 280rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #3B82F6;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(59,130,246,0.3);
+  z-index: 50;
+}
+.add-ann-icon { font-size: 36rpx; }

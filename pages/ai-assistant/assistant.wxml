@@ -1,0 +1,31 @@
+<view class="page-container">
+  <!-- 聊天记录 -->
+  <scroll-view class="chat-list" scroll-y scroll-with-animation="{{true}}" scroll-into-view="msg-{{msgList.length - 1}}">
+    <view class="welcome-msg" wx:if="{{msgList.length === 0}}">
+      <view class="ai-icon">⚡</view>
+      <view class="welcome-title">电路分析 AI 助手</view>
+      <view class="welcome-desc">你好！我是电路分析学习助手，你可以问我任何电路分析相关的问题～</view>
+      <view class="suggestion-list">
+        <view wx:for="{{suggestions}}" wx:key="index" class="suggestion-item" bindtap="sendSuggestion">
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <view wx:for="{{msgList}}" wx:key="id" class="msg-row {{item.role === 'user' ? 'msg-user-row' : 'msg-ai-row'}}" id="msg-{{index}}">
+      <view wx:if="{{item.role === 'assistant'}}" class="msg-avatar">⚡</view>
+      <view class="msg-bubble {{item.role === 'user' ? 'msg-user' : 'msg-ai'}}">
+        <text class="msg-text">{{item.content}}</text>
+        <view class="msg-time">{{item.time}}</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 输入区 -->
+  <view class="input-bar">
+    <input class="msg-input" placeholder="输入电路分析问题..." bindinput="onInput" value="{{inputValue}}" confirm-type="send" bindconfirm="sendMessage" />
+    <view class="send-btn {{inputValue.trim() ? 'send-active' : ''}}" bindtap="sendMessage">
+      发送
+    </view>
+  </view>
+</view>
