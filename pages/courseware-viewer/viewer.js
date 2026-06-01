@@ -25,66 +25,23 @@ Page({
     const fileId = options.fileId || '';
     const title = decodeURIComponent(options.title || '课件');
     const totalPages = getPageCount(fileId) || 1;
-    // 初始用占位，然后逐个下载
     const pageList = [];
     for (let i = 1; i <= totalPages; i++) {
-      pageList.push({ page: i, src: '', loaded: false, failed: false });
+      pageList.push({ page: i, src: getPageImageUrl(fileId, i), loaded: false });
     }
     this.setData({ fileId, title, totalPages, pageList, currentPage: 1, currentIndex: 0 });
     this.loadAnnCount();
-    // 下载第一页
-    this.downloadPage(1);
-    this.downloadPage(2); // 预加载下一页
-  },
-
-  downloadPage(pageNum) {
-    if (pageNum < 1 || pageNum > this.data.totalPages) return;
-    const url = getPageImageUrl(this.data.fileId, pageNum);
-    const idx = pageNum - 1;
-    wx.downloadFile({
-      url: url,
-      success: (res) => {
-        if (res.statusCode === 200 && res.tempFilePath) {
-          this.setData({
-            [`pageList[${idx}].src`]: res.tempFilePath,
-            [`pageList[${idx}].loaded`]: true
-          });
-        } else {
-          this.downloadPageFallback(pageNum);
-        }
-      },
-      fail: () => { this.downloadPageFallback(pageNum); }
-    });
-  },
-
-  downloadPageFallback(pageNum) {
-    const idx = pageNum - 1;
-    this.setData({
-      [`pageList[${idx}].src`]: getPageImageUrl(this.data.fileId, pageNum),
-      [`pageList[${idx}].loaded`]: true,
-      [`pageList[${idx}].failed`]: true
-    });
-  },
-
-  retryPage(e) {
-    const idx = e.currentTarget.dataset.index;
-    this.setData({
-      [`pageList[${idx}].loaded`]: false,
-      [`pageList[${idx}].failed`]: false,
-      [`pageList[${idx}].src`]: ''
-    });
-    this.downloadPage(idx + 1);
   },
 
   onSwiperChange(e) {
-    const page = e.detail.current + 1;
-    this.setData({ currentPage: page, currentIndex: e.detail.current });
-    this.downloadPage(page);
-    this.downloadPage(page + 1); // 预加载下一页
+    this.setData({ currentPage: e.detail.current + 1, currentIndex: e.detail.current });
   },
 
-  onImgLoad(e) { /* 已通过 downloadFile 处理加载状态 */ },
-  onImgError(e) { /* 已通过 downloadFile 处理错误 */ },
+  onImgLoad(e) {
+    const idx = e.currentTarget.dataset.index;
+    if (idx === undefined) return;
+    this.setData({ [`pageList[${idx}].loaded`]: true });
+  },
 
   // ===== 批注计数 =====
   loadAnnCount() {
