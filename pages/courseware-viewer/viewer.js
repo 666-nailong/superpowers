@@ -16,7 +16,9 @@ Page({
     pageList: [],
     annCount: 0,
     showAnnListPage: false,
-    allAnnotations: []
+    allAnnotations: [],
+    fullScreen: false,
+    fullScreenSrc: ''
   },
 
   onLoad(options) {
@@ -195,6 +197,15 @@ Page({
         storage.setChatHistory(history);
       }
     }, 300);
+  },
+
+  // ===== 全屏查看 =====
+  enterFullScreen(e) {
+    const src = e.currentTarget.dataset.src;
+    this.setData({ fullScreen: true, fullScreenSrc: src });
+  },
+  exitFullScreen() {
+    this.setData({ fullScreen: false, fullScreenSrc: '' });
   },
 
   goBack() { wx.navigateBack(); }

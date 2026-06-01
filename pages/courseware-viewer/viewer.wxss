@@ -95,3 +95,42 @@
 .ann-reply { background: #F7F8FA; border-radius: 8rpx; padding: 12rpx 16rpx; margin-top: 8rpx; font-size: 24rpx; }
 .ann-reply-user { color: #1A365D; }
 .ann-card-reply { font-size: 24rpx; color: #1A365D; margin-top: 12rpx; }
+
+/* 全屏查看 */
+.fullscreen-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #000;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fullscreen-image {
+  width: 100%;
+}
+.fullscreen-close {
+  position: fixed;
+  top: 40rpx;
+  right: 32rpx;
+  width: 64rpx;
+  height: 64rpx;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+}
+.fullscreen-page {
+  position: fixed;
+  bottom: 60rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  padding: 12rpx 32rpx;
+  border-radius: 24rpx;
+  font-size: 26rpx;
+}

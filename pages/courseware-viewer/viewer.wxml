@@ -10,9 +10,16 @@
   <view class="page-area">
     <swiper class="page-swiper" current="{{currentIndex}}" bindchange="onSwiperChange" circular="{{false}}">
       <swiper-item wx:for="{{pageList}}" wx:key="page" class="swiper-slide">
-        <image class="page-image" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
+        <image class="page-image" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}" bindtap="enterFullScreen" data-src="{{item.src}}"></image>
       </swiper-item>
     </swiper>
+  </view>
+
+  <!-- 全屏查看遮罩 -->
+  <view wx:if="{{fullScreen}}" class="fullscreen-mask" bindtap="exitFullScreen">
+    <image class="fullscreen-image" src="{{fullScreenSrc}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
+    <view class="fullscreen-close">✕</view>
+    <view class="fullscreen-page">{{currentPage}} / {{totalPages}}</view>
   </view>
 
   <!-- 底部工具栏 -->
