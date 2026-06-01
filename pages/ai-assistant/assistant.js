@@ -11,6 +11,18 @@ Page({
     apiKey: '',
     apiModel: 'deepseek-chat',
     showKey: false,
+    apiOptions: ['DeepSeek', 'OpenAI', '阿里通义千问', '硅基流动', '百度文心', '月之暗面Kimi', '智谱ChatGLM', '自定义'],
+    apiSelected: 0,
+    apiCustomUrl: false,
+    apiPresets: {
+      'DeepSeek': { url: 'https://api.deepseek.com', model: 'deepseek-chat' },
+      'OpenAI': { url: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+      '阿里通义千问': { url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-turbo' },
+      '硅基流动': { url: 'https://api.siliconflow.cn/v1', model: 'Qwen/Qwen2.5-7B-Instruct' },
+      '百度文心': { url: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat', model: 'ernie-3.5-8k' },
+      '月之暗面Kimi': { url: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
+      '智谱ChatGLM': { url: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash' }
+    },
     suggestions: [
       '叠加定理的内容是什么？',
       '怎么用三要素法求解一阶电路？',
@@ -26,10 +38,12 @@ Page({
     const apiKey = wx.getStorageSync('ai_api_key') || '';
     const apiUrl = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com';
     const apiModel = wx.getStorageSync('ai_api_model') || 'deepseek-chat';
+    const apiSelected = wx.getStorageSync('ai_api_selected') || 0;
     this.setData({
       msgList: history,
       hasApiKey: !!apiKey,
-      apiKey, apiUrl, apiModel
+      apiKey, apiUrl, apiModel, apiSelected,
+      apiCustomUrl: apiSelected === 7
     });
   },
 
@@ -126,6 +140,17 @@ Page({
   // 设置面板
   showSettings() { this.setData({ showSettingsPanel: true }); },
   hideSettings() { this.setData({ showSettingsPanel: false }); },
+  onApiSelect(e) {
+    const idx = parseInt(e.detail.value);
+    const name = this.data.apiOptions[idx];
+    const preset = this.data.apiPresets[name];
+    const isCustom = idx === 7;
+    if (preset) {
+      this.setData({ apiSelected: idx, apiUrl: preset.url, apiModel: preset.model, apiCustomUrl: isCustom });
+    } else {
+      this.setData({ apiSelected: idx, apiCustomUrl: isCustom });
+    }
+  },
   onApiUrlInput(e) { this.setData({ apiUrl: e.detail.value }); },
   onApiKeyInput(e) { this.setData({ apiKey: e.detail.value }); },
   onApiModelInput(e) { this.setData({ apiModel: e.detail.value }); },
@@ -135,6 +160,7 @@ Page({
     wx.setStorageSync('ai_api_url', this.data.apiUrl);
     wx.setStorageSync('ai_api_key', this.data.apiKey);
     wx.setStorageSync('ai_api_model', this.data.apiModel);
+    wx.setStorageSync('ai_api_selected', this.data.apiSelected);
     this.setData({ hasApiKey: !!this.data.apiKey, showSettingsPanel: false });
     wx.showToast({ title: '设置已保存', icon: 'success' });
   },

@@ -40,19 +40,28 @@
       <view class="settings-title">⚙️ AI 设置</view>
       
       <view class="settings-field">
-        <text class="settings-label">API 地址</text>
-        <input class="settings-input" placeholder="例如: https://api.deepseek.com" value="{{apiUrl}}" bindinput="onApiUrlInput" />
+        <text class="settings-label">选择API服务商</text>
+        <picker mode="selector" range="{{apiOptions}}" bindchange="onApiSelect">
+          <view class="settings-picker">{{apiOptions[apiSelected] || '点击选择'}} ▾</view>
+        </picker>
+      </view>
+      
+      <view wx:if="{{apiCustomUrl}}" class="settings-field">
+        <text class="settings-label">自定义 API 地址</text>
+        <input class="settings-input" placeholder="https://your-api.com/v1" value="{{apiUrl}}" bindinput="onApiUrlInput" />
+      </view>
+
+      <view class="settings-field">
+        <text class="settings-label">模型名称</text>
+        <input class="settings-input" placeholder="deepseek-chat" value="{{apiModel}}" bindinput="onApiModelInput" />
       </view>
       
       <view class="settings-field">
         <text class="settings-label">API Key</text>
-        <input class="settings-input" placeholder="sk-xxxxxxxxxxxxxxxx" value="{{apiKey}}" bindinput="onApiKeyInput" password="{{!showKey}}" />
-        <text class="settings-toggle" bindtap="toggleKeyShow">{{showKey ? '🙈' : '👁️'}}</text>
-      </view>
-      
-      <view class="settings-field">
-        <text class="settings-label">模型名称</text>
-        <input class="settings-input" placeholder="deepseek-chat" value="{{apiModel}}" bindinput="onApiModelInput" />
+        <view class="settings-key-row">
+          <input class="settings-input key-input" placeholder="sk-xxxxxxxxxxxxxxxx" value="{{apiKey}}" bindinput="onApiKeyInput" password="{{!showKey}}" />
+          <text class="settings-toggle" bindtap="toggleKeyShow">{{showKey ? '🙈' : '👁️'}}</text>
+        </view>
       </view>
 
       <view class="settings-hint">💡 支持任何 OpenAI 兼容接口。不设置则使用内置预置问答库。</view>
