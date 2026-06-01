@@ -46,21 +46,22 @@
   </view>
 
   <!-- 批注面板（从底部弹出） -->
-  <view wx:if="{{showAnnotationPanel}}" class="annotation-mask" bindtap="hideAnnotations">
-    <view class="annotation-panel" catchtap="">
+  <view wx:if="{{showAnnotationPanel}}" class="annotation-mask" catchtap="hideAnnotations">
+    <view class="annotation-panel">
       <view class="panel-header">
         <text class="panel-title">批注（{{pageAnnotationCount}}）</text>
         <text class="panel-close" bindtap="hideAnnotations">✕</text>
       </view>
 
-      <scroll-view class="panel-body" scroll-y>
+      <view class="panel-body">
         <view wx:if="{{currentAnnotations.length === 0}}" class="empty-state">
-          <view style="color:#A0AEC0">暂无批注，第一个发言吧</view>
+          <view style="color:#A0AEC0;padding:40rpx 0;text-align:center">暂无批注，第一个发言吧</view>
         </view>
 
         <view wx:for="{{currentAnnotations}}" wx:key="id" class="annotation-item">
           <view class="ann-header">
             <text class="ann-user">{{item.userName}}</text>
+            <text class="ann-page">{{item.pageLabel}}</text>
             <text class="ann-time">{{item.time}}</text>
             <text class="ann-likes" bindtap="likeAnnotation" data-id="{{item.id}}">
               {{item.liked ? '❤️' : '🤍'}} {{item.likes}}
@@ -74,14 +75,14 @@
           </view>
 
           <view class="reply-input-row">
-            <input class="reply-input" placeholder="回复..." bindinput="onReplyInput" data-id="{{item.id}}" />
+            <input class="reply-input" placeholder="回复..." bindblur="onReplyInput" data-id="{{item.id}}" />
             <text class="reply-send" bindtap="sendReply" data-id="{{item.id}}">发送</text>
           </view>
         </view>
-      </scroll-view>
+      </view>
 
       <view class="add-annotation">
-        <input class="ann-input" placeholder="添加批注（最多200字）" maxlength="200" bindinput="onAnnotationInput" />
+        <input class="ann-input" placeholder="添加批注（最多200字）" maxlength="200" id="annInput" />
         <view class="ann-submit primary-btn" bindtap="submitAnnotation">提交</view>
       </view>
     </view>

@@ -66,6 +66,7 @@ Page({
     const formatted = sorted.map(a => ({
       ...a,
       time: new Date(a.createdAt).toLocaleDateString('zh-CN'),
+      pageLabel: '第' + (a.pageNum || 1) + '页',
       liked: (a.likedBy || []).includes('default_user'),
       replies: (a.replies || []).map(r => ({
         ...r,
@@ -85,8 +86,19 @@ Page({
   onAnnotationInput(e) { this.setData({ annotationInput: e.detail.value }); },
 
   submitAnnotation() {
-    const content = this.data.annotationInput.trim();
-    if (!content) return;
+    const query = wx.createSelectorQuery();
+    query.select('#annInput').fields({ value: true, properties: ['value'] }, (res) => {
+      const content = (res && res.value || '').trim();
+      if (!content) {
+        wx.showToast({ title: '请输入批注内容', icon: 'none' });
+        return;
+      }
+      this.saveAnnotation(content);
+    });
+    query.exec();
+  },
+
+  saveAnnotation(content) {
     const key = `${this.data.fileId}_${this.data.currentPage}`;
     const allAnn = storage.getAnnotations();
     if (!allAnn[key]) {
@@ -107,9 +119,11 @@ Page({
     const myAnn = storage.getMyAnnotations();
     myAnn.push({ annotationId: newAnn.id, fileId: this.data.fileId, pageNum: this.data.currentPage, content, createdAt: Date.now() });
     storage.setMyAnnotations(myAnn);
-    this.setData({ annotationInput: '' });
     wx.showToast({ title: '批注已添加', icon: 'success' });
     this.loadAnnotations();
+    // 清空输入框
+    const query2 = wx.createSelectorQuery();
+    query2.select('#annInput').node((res) => { if (res && res.node) res.node.value = ''; }).exec();
   },
 
   likeAnnotation(e) {
