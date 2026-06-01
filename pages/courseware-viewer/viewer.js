@@ -1,7 +1,6 @@
 const storage = require('../../utils/storage');
 const pageMap = require('../../utils/page-map');
 
-// 从 page-map.json 获取章节页数
 function getPageCount(fileId) {
   const info = pageMap[fileId];
   return info ? info.pages : 0;
@@ -16,127 +15,53 @@ Page({
     currentIndex: 0,
     pageList: [],
     annCount: 0,
-    currentAnnotations: [],
-    showAnnPanel: false,
-    replyInputs: {}
+    showAnnListPage: false,
+    allAnnotations: []
   },
 
   onLoad(options) {
     const fileId = options.fileId || '';
     const title = decodeURIComponent(options.title || '课件');
     const totalPages = getPageCount(fileId) || 1;
-
-    // 构建页面列表
     const pageList = [];
     for (let i = 1; i <= totalPages; i++) {
-      pageList.push({
-        page: i,
-        src: `../../assets/pdf_pages/${fileId}/${i}.jpg`,
-        annotations: []
-      });
+      pageList.push({ page: i, src: `../../assets/pdf_pages/${fileId}/${i}.jpg` });
     }
-
     this.setData({ fileId, title, totalPages, pageList, currentPage: 1, currentIndex: 0 });
-    this.loadAnnotations(1);
+    this.loadAnnCount();
   },
 
   onSwiperChange(e) {
-    const page = e.detail.current + 1;
-    this.setData({ currentPage: page, currentIndex: e.detail.current });
-    this.loadAnnotations(page);
+    this.setData({ currentPage: e.detail.current + 1, currentIndex: e.detail.current });
   },
 
-  prevPage() {
-    if (this.data.currentPage > 1) {
-      const p = this.data.currentPage - 1;
-      this.setData({ currentPage: p, currentIndex: p - 1 });
-      this.loadAnnotations(p);
-    }
-  },
-
-  nextPage() {
-    if (this.data.currentPage < this.data.totalPages) {
-      const p = this.data.currentPage + 1;
-      this.setData({ currentPage: p, currentIndex: p - 1 });
-      this.loadAnnotations(p);
-    }
-  },
-
-  onPageTap(e) {
-    // 点击页面添加批注（获取点击位置）
-    const page = e.currentTarget.dataset.page;
-    const touch = e.touches && e.touches[0];
-    if (touch) {
-      wx.showModal({
-        title: '在此页添加批注',
-        content: '确定要在第' + page + '页添加批注吗？',
-        success: (res) => {
-          if (res.confirm) {
-            this.setData({ showAnnPanel: true });
-          }
-        }
-      });
-    }
-  },
-
-  loadAnnotations(pageNum) {
-    const key = `${this.data.fileId}_${pageNum}`;
+  // ===== 批注计数 =====
+  loadAnnCount() {
     const allAnn = storage.getAnnotations();
-    const anns = (allAnn[key] || { annotations: [] }).annotations || [];
-
-    // 统计总数
-    let totalAnn = 0;
+    let total = 0;
     for (const k in allAnn) {
       if (k.startsWith(this.data.fileId + '_')) {
-        totalAnn += (allAnn[k].annotations || []).length;
+        total += (allAnn[k].annotations || []).length;
       }
     }
+    this.setData({ annCount: total });
+  },
 
-    const sorted = [...anns].sort((a, b) => b.likes - a.likes);
-    const formatted = sorted.map(a => ({
-      ...a,
-      time: new Date(a.createdAt).toLocaleDateString('zh-CN'),
-      liked: (a.likedBy || []).includes('default_user'),
-      replies: (a.replies || []).map(r => ({
-        ...r,
-        time: new Date(r.createdAt).toLocaleDateString('zh-CN')
-      }))
-    }));
-
-    // 更新页面列表中的批注标记
-    const pageList = this.data.pageList.map(p => ({
-      ...p,
-      annotations: p.page === pageNum ? formatted.slice(0, 5).map(a => ({
-        id: a.id,
-        x: 10 + Math.random() * 80,
-        y: 10 + Math.random() * 80,
-        likes: a.likes
-      })) : p.annotations
-    }));
-
-    this.setData({
-      currentAnnotations: formatted,
-      pageList,
-      annCount: totalAnn
+  // ===== 添加批注（微信原生弹窗） =====
+  addAnnotation() {
+    wx.showModal({
+      title: '添加批注 - 第' + this.data.currentPage + '页',
+      editable: true,
+      placeholderText: '输入批注内容...',
+      success: (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          this.saveAnnotation(res.content.trim());
+        }
+      }
     });
   },
 
-  showAnnPanel() { this.setData({ showAnnPanel: true }); },
-  closeAnnPanel() { this.setData({ showAnnPanel: false }); },
-
-  onMarkerTap(e) {
-    const { id } = e.currentTarget.dataset;
-    this.setData({ showAnnPanel: true });
-  },
-
-  onAnnInput(e) { this.setData({ annInputVal: e.detail.value }); },
-
-  submitAnnotation() {
-    const content = (this.data.annInputVal || '').trim();
-    if (!content) {
-      wx.showToast({ title: '请输入批注', icon: 'none' });
-      return;
-    }
+  saveAnnotation(content) {
     const key = `${this.data.fileId}_${this.data.currentPage}`;
     const allAnn = storage.getAnnotations();
     if (!allAnn[key]) {
@@ -158,13 +83,47 @@ Page({
     myAnn.push({ annotationId: 'ann_' + Date.now(), fileId: this.data.fileId, pageNum: this.data.currentPage, content, createdAt: Date.now() });
     storage.setMyAnnotations(myAnn);
     wx.showToast({ title: '批注已添加', icon: 'success' });
-    this.setData({ annInputVal: '' });
-    this.loadAnnotations(this.data.currentPage);
+    this.loadAnnCount();
+    if (this.data.showAnnListPage) this.loadAllAnnotations();
   },
 
+  // ===== 批注列表 =====
+  showAnnList() {
+    this.setData({ showAnnListPage: true });
+    this.loadAllAnnotations();
+  },
+
+  closeAnnList() {
+    this.setData({ showAnnListPage: false });
+  },
+
+  loadAllAnnotations() {
+    const allAnn = storage.getAnnotations();
+    const all = [];
+    for (const k in allAnn) {
+      if (k.startsWith(this.data.fileId + '_')) {
+        const anns = allAnn[k].annotations || [];
+        anns.forEach(a => {
+          all.push({
+            ...a,
+            time: new Date(a.createdAt).toLocaleDateString('zh-CN'),
+            liked: (a.likedBy || []).includes('default_user'),
+            replies: (a.replies || []).map(r => ({
+              ...r,
+              time: new Date(r.createdAt).toLocaleDateString('zh-CN')
+            }))
+          });
+        });
+      }
+    }
+    all.sort((a, b) => b.createdAt - a.createdAt);
+    this.setData({ allAnnotations: all, annCount: all.length });
+  },
+
+  // ===== 点赞 =====
   likeAnnotation(e) {
-    const { id } = e.currentTarget.dataset;
-    const key = `${this.data.fileId}_${this.data.currentPage}`;
+    const { id, page } = e.currentTarget.dataset;
+    const key = `${this.data.fileId}_${page || this.data.currentPage}`;
     const allAnn = storage.getAnnotations();
     const anns = allAnn[key];
     if (!anns) return;
@@ -179,39 +138,60 @@ Page({
       target.likes++;
     }
     storage.setAnnotations(allAnn);
-    this.loadAnnotations(this.data.currentPage);
+    this.loadAllAnnotations();
   },
 
-  onReplyInput(e) {
+  // ===== 回复（微信原生弹窗） =====
+  replyAnnotation(e) {
     const { id } = e.currentTarget.dataset;
-    this.setData({ replyInputs: { ...this.data.replyInputs, [id]: e.detail.value } });
+    wx.showModal({
+      title: '回复批注',
+      editable: true,
+      placeholderText: '输入回复内容...',
+      success: (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          this.saveReply(id, res.content.trim());
+        }
+      }
+    });
   },
 
-  sendReply(e) {
-    const { id } = e.currentTarget.dataset;
-    const content = (this.data.replyInputs[id] || '').trim();
-    if (!content) return;
-    const key = `${this.data.fileId}_${this.data.currentPage}`;
+  saveReply(annId, content) {
     const allAnn = storage.getAnnotations();
-    const anns = allAnn[key];
-    if (!anns) return;
-    const target = anns.annotations.find(a => a.id === id);
-    if (!target) return;
-    if (!target.replies) target.replies = [];
-    target.replies.push({ id: 'rep_' + Date.now(), userId: 'default_user', userName: '匿名同学', content, createdAt: Date.now(), likes: 0 });
-    storage.setAnnotations(allAnn);
-    this.setData({ replyInputs: { ...this.data.replyInputs, [id]: '' } });
-    wx.showToast({ title: '回复成功', icon: 'success' });
-    this.loadAnnotations(this.data.currentPage);
+    for (const k in allAnn) {
+      const target = (allAnn[k].annotations || []).find(a => a.id === annId);
+      if (target) {
+        if (!target.replies) target.replies = [];
+        target.replies.push({
+          id: 'rep_' + Date.now(),
+          userId: 'default_user',
+          userName: '匿名同学',
+          content,
+          createdAt: Date.now(),
+          likes: 0
+        });
+        storage.setAnnotations(allAnn);
+        wx.showToast({ title: '回复成功', icon: 'success' });
+        this.loadAllAnnotations();
+        return;
+      }
+    }
+    wx.showToast({ title: '批注不存在', icon: 'none' });
   },
 
+  // ===== AI提问 =====
   askAI() {
     wx.switchTab({ url: '/pages/ai-assistant/assistant' });
     setTimeout(() => {
       const context = `我在学习「${this.data.title}」第${this.data.currentPage}页，能帮我讲解一下吗？`;
       const history = storage.getChatHistory();
       if (history.length === 0 || history[history.length - 1].content !== context) {
-        history.push({ id: 'msg_' + Date.now(), role: 'user', content: context, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) });
+        history.push({
+          id: 'msg_' + Date.now(),
+          role: 'user',
+          content: context,
+          time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        });
         storage.setChatHistory(history);
       }
     }, 300);

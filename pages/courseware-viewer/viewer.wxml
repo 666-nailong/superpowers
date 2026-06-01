@@ -10,61 +10,50 @@
   <view class="page-area">
     <swiper class="page-swiper" current="{{currentIndex}}" bindchange="onSwiperChange" circular="{{false}}">
       <swiper-item wx:for="{{pageList}}" wx:key="page" class="swiper-slide">
-        <view class="page-wrapper">
-          <image class="page-image" src="{{item.src}}" mode="widthFix" bindtap="onPageTap" data-page="{{item.page}}" show-menu-by-longpress="{{true}}"></image>
-          <!-- 批注标记 -->
-          <view wx:for="{{item.annotations}}" wx:key="id" class="ann-marker"
-                style="left:{{item.x}}%;top:{{item.y}}%"
-                bindtap="onMarkerTap" data-id="{{item.id}}">
-            <text>{{item.likes > 0 ? '💬' : '💭'}}</text>
-          </view>
-        </view>
+        <image class="page-image" src="{{item.src}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
       </swiper-item>
     </swiper>
   </view>
 
-  <!-- 批注弹出层 -->
-  <view wx:if="{{showAnnPanel}}" class="ann-mask" bindtap="closeAnnPanel">
-    <view class="ann-panel" catchtap="">
-      <view class="ann-panel-header">
-        <text>批注</text>
-        <text bindtap="closeAnnPanel" style="font-size:32rpx;color:#A0AEC0;padding:8rpx">✕</text>
-      </view>
-      <scroll-view scroll-y class="ann-list">
-        <view wx:if="{{currentAnnotations.length === 0}}" style="padding:40rpx 0;text-align:center;color:#A0AEC0;font-size:26rpx">暂无批注</view>
-        <view wx:for="{{currentAnnotations}}" wx:key="id" class="ann-item">
-          <view class="ann-item-header">
-            <text class="ann-item-user">{{item.userName}} 第{{item.pageNum}}页</text>
-            <text class="ann-item-like" bindtap="likeAnnotation" data-id="{{item.id}}">{{item.liked ? '❤️' : '🤍'}} {{item.likes}}</text>
-          </view>
-          <view class="ann-item-content">{{item.content}}</view>
-          <view wx:for="{{item.replies}}" wx:key="id" class="ann-reply">
-            <text class="ann-reply-user">{{item.userName}}：</text>
-            <text>{{item.content}}</text>
-          </view>
-          <view class="ann-reply-row">
-            <input class="ann-reply-input" placeholder="回复..." bindinput="onReplyInput" data-id="{{item.id}}" />
-            <text class="ann-reply-send" bindtap="sendReply" data-id="{{item.id}}">发送</text>
-          </view>
-        </view>
-      </scroll-view>
-      <view class="ann-add-row">
-        <input class="ann-add-input" placeholder="添加批注..." bindinput="onAnnInput" />
-        <view class="ann-add-btn" bindtap="submitAnnotation">提交</view>
-      </view>
+  <!-- 底部工具栏 -->
+  <view class="bottom-toolbar">
+    <view class="tool-btn" bindtap="showAnnList">
+      <text>💬</text>
+      <text class="tool-badge" wx:if="{{annCount > 0}}">{{annCount}}</text>
+    </view>
+    <view class="tool-btn primary" bindtap="addAnnotation">
+      <text>✏️ 添加批注</text>
+    </view>
+    <view class="tool-btn" bindtap="askAI">
+      <text>🤖 AI提问</text>
     </view>
   </view>
 
-  <!-- 翻页按钮 -->
-  <view class="page-nav">
-    <view class="nav-btn {{currentPage <= 1 ? 'disabled' : ''}}" bindtap="prevPage">◀ 上一页</view>
-    <view class="nav-center">{{currentPage}} / {{totalPages}}</view>
-    <view class="nav-btn {{currentPage >= totalPages ? 'disabled' : ''}}" bindtap="nextPage">下一页 ▶</view>
-  </view>
-
-  <!-- 右下角按钮组 -->
-  <view class="float-btns">
-    <view class="float-btn" bindtap="showAnnPanel">💬 {{annCount}}</view>
-    <view class="float-btn ai-btn" bindtap="askAI">🤖 AI</view>
+  <!-- 批注列表页（独立页面，不是弹出层） -->
+  <view wx:if="{{showAnnListPage}}" class="ann-page">
+    <view class="ann-page-header">
+      <text class="ann-page-back" bindtap="closeAnnList">← 返回</text>
+      <text>全部批注（{{annCount}}）</text>
+      <text class="ann-page-add" bindtap="addAnnotation">✏️</text>
+    </view>
+    <scroll-view scroll-y class="ann-page-body">
+      <view wx:if="{{allAnnotations.length === 0}}" style="padding:80rpx 0;text-align:center;color:#A0AEC0;font-size:28rpx">暂无批注</view>
+      <view wx:for="{{allAnnotations}}" wx:key="id" class="ann-card">
+        <view class="ann-card-header">
+          <text class="ann-card-user">{{item.userName}}</text>
+          <text class="ann-card-page">第{{item.pageNum}}页</text>
+          <text class="ann-card-time">{{item.time}}</text>
+          <text class="ann-card-like" bindtap="likeAnnotation" data-id="{{item.id}}" data-page="{{item.pageNum}}">
+            {{item.liked ? '❤️' : '🤍'}} {{item.likes}}
+          </text>
+        </view>
+        <view class="ann-card-content">{{item.content}}</view>
+        <view wx:for="{{item.replies}}" wx:key="id" class="ann-reply">
+          <text class="ann-reply-user">{{item.userName}}：</text>
+          <text>{{item.content}}</text>
+        </view>
+        <view class="ann-card-reply" bindtap="replyAnnotation" data-id="{{item.id}}">💬 回复</view>
+      </view>
+    </scroll-view>
   </view>
 </view>
