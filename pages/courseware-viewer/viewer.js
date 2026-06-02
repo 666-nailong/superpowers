@@ -231,7 +231,7 @@ Page({
 
   callAI(apiUrl, apiKey, apiModel, question) {
     wx.request({
-      url: apiUrl + '/v1/chat/completions',
+      url: apiUrl,
       method: 'POST',
       header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
       data: {

@@ -16,13 +16,13 @@ Page({
     apiSelected: 0,
     apiCustomUrl: false,
     apiPresets: {
-      'DeepSeek': { url: 'https://api.deepseek.com', model: 'deepseek-chat' },
-      'OpenAI': { url: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
-      '阿里通义千问': { url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-turbo' },
-      '硅基流动': { url: 'https://api.siliconflow.cn/v1', model: 'Qwen/Qwen2.5-7B-Instruct' },
-      '百度文心': { url: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat', model: 'ernie-3.5-8k' },
-      '月之暗面Kimi': { url: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
-      '智谱ChatGLM': { url: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash' }
+      'DeepSeek': { path: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat' },
+      'OpenAI': { path: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },
+      '阿里通义千问': { path: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-turbo' },
+      '硅基流动': { path: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct' },
+      '百度文心': { path: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', model: 'ernie-3.5-8k' },
+      '月之暗面Kimi': { path: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
+      '智谱ChatGLM': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash' }
     },
     suggestions: [
       '叠加定理的内容是什么？',
@@ -124,7 +124,7 @@ Page({
       ];
 
       wx.request({
-        url: this.data.apiUrl + '/v1/chat/completions',
+        url: this.data.apiUrl,
         method: 'POST',
         header: {
           'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ Page({
     const preset = this.data.apiPresets[name];
     const isCustom = idx === 7;
     if (preset) {
-      this.setData({ apiSelected: idx, apiUrl: preset.url, apiModel: preset.model, apiCustomUrl: isCustom });
+      this.setData({ apiSelected: idx, apiUrl: preset.path, apiModel: preset.model, apiCustomUrl: isCustom });
     } else {
       this.setData({ apiSelected: idx, apiCustomUrl: isCustom });
     }
