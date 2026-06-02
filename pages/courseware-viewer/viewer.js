@@ -219,56 +219,46 @@ Page({
   },
 
   // AI请求
-  _aiBusy: false, _aiLastReq: 0,
-  aiSend(msgText) {
-    const apiKey = wx.getStorageSync('ai_api_key') || '';
-    const apiUrl = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-    const apiModel = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
-    if (!apiKey) { this.usePreset(msgText); return; }
-    if (this._aiBusy) { wx.showToast({ title: '⏳ 请等待上一条回复', icon: 'none' }); return; }
-    const msgs = this.data.aiMsgs;
-    this.setData({ aiMsgs: [...msgs, { role: 'ai', content: '🤔 思考中...' }] });
-    this._aiBusy = true;
-    // 限流等待
-    const wait = Math.max(0, 8000 - (Date.now() - this._aiLastReq));
-    setTimeout(() => this.aiCall(apiUrl, apiKey, apiModel, msgText), wait);
+  _busy: false, _lastReq: 0, _retry: 0,
+  aiSend(t) {
+    const k = wx.getStorageSync('ai_api_key') || '', u = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions', m = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
+    if (!k) { this.usePreset(t); return; }
+    if (this._busy) { wx.showToast({ title: '⏳ 等待回复', icon:'none' }); return; }
+    this.setData({ aiMsgs: [...this.data.aiMsgs, { role:'ai', content:'🤔 思考中...' }] });
+    this._busy = true; this._retry = 0;
+    setTimeout(() => this.aiCall(u, k, m, t), Math.max(0, 3000 - (Date.now() - this._lastReq)));
   },
-
-  aiCall(apiUrl, apiKey, apiModel, question, retry) {
-    retry = retry || 0;
-    const timer = setTimeout(() => { this._aiBusy = false; this.updateAiLastMessage('⚠️ 请求超时'); }, 60000);
+  aiCall(u, k, m, q) {
+    const t = setTimeout(() => { this._busy = false; this.updAI('⚠️ 超时重试'); }, 60000);
     wx.request({
-      url: apiUrl, method: 'POST',
-      header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-      data: {
-        model: apiModel,
-        messages: [
-          { role: 'system', content: '你是全能AI助手，擅长电路分析但不限于此。用中文回答，适当使用Markdown格式（**加粗**、-列表、```代码```）。公式用纯文本（如U=IR、∑u=0）。当前：' + this.data.title + '第' + this.data.currentPage + '页。' },
-          { role: 'user', content: question }
-        ],
-        temperature: 0.8, max_tokens: 2000
-      },
-      success: (res) => {
-        clearTimeout(timer);
-        if (res.statusCode === 429 && retry < 3) {
-          this.updateAiLastMessage('⏳ 繁忙，' + ((retry + 1) * 3) + '秒后重试...');
-          setTimeout(() => this.aiCall(apiUrl, apiKey, apiModel, question, retry + 1), (retry + 1) * 3000);
+      url: u, method:'POST',
+      header: { 'Content-Type':'application/json', 'Authorization':'Bearer '+k },
+      data: { model:m, messages:[{ role:'system', content:'你是全能AI助手。用中文回答，**重点**加粗、- 列表、```代码```。公式用纯文本（U=IR）。当前：'+this.data.title+'第'+this.data.currentPage+'页。' }, { role:'user', content:q }], temperature:0.6, max_tokens:1500 },
+      success: (r) => {
+        clearTimeout(t);
+        if (r.statusCode === 429 && this._retry < 3) {
+          this._retry++;
+          const w = this._retry * 5000;
+          this.updAI(`⏳ 繁忙，${w/1000}秒后重试...`);
+          setTimeout(() => this.aiCall(u, k, m, q), w);
           return;
         }
-        this._aiBusy = false; this._aiLastReq = Date.now();
-        let answer;
-        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等15秒再试';
-        else if (res.statusCode === 401 || res.statusCode === 403) answer = '⚠️ API Key无效';
-        else if (res.statusCode !== 200) answer = '⚠️ API错误(' + res.statusCode + ')';
-        else if (res.data?.choices?.[0]) answer = res.data.choices[0].message.content;
-        else answer = '⚠️ 返回格式异常';
-        this.updateAiLastMessage(answer);
+        this._busy = false; this._lastReq = Date.now();
+        let a;
+        if (r.statusCode === 429) a = '⚠️ 太频繁，等30秒后重试或切DeepSeek';
+        else if (r.statusCode === 401) a = '⚠️ Key无效，去AI设置检查';
+        else if (r.statusCode !== 200) a = '⚠️ 错误'+r.statusCode+'，切其他服务商';
+        else if (r.data?.choices?.[0]) a = r.data.choices[0].message.content;
+        else a = '⚠️ 返回异常';
+        this.updAI(a);
       },
-      fail: (err) => {
-        clearTimeout(timer); this._aiBusy = false; this._aiLastReq = Date.now();
-        this.updateAiLastMessage('⚠️ 网络错误，检查API设置');
-      }
+      fail: () => { clearTimeout(t); this._busy = false; this.updAI('⚠️ 网络错误'); }
     });
+  },
+  updAI(c) {
+    const msgs = this.data.aiMsgs;
+    msgs[msgs.length-1] = { role:'ai', content:c, html:mdToHtml(c) };
+    this.setData({ aiMsgs: msgs });
   },
 
   usePreset(question) {
