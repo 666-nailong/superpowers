@@ -100,20 +100,12 @@ Page({
 
   // ===== AI响应 =====
   async getAIResponse(question) {
-    // 限流：每2秒最多1次请求
-    const now = Date.now();
-    if (now - this.data.lastRequestTime < 2000) {
-      await new Promise(r => setTimeout(r, 2000 - (now - this.data.lastRequestTime)));
-    }
-
     if (this.data.hasApiKey && this.data.apiKey) {
       this.addMessage('assistant', '🤔 思考中...');
       try {
         const answer = await this.callAIAPI(question);
-        const list = [...this.data.msgList];
-        list[list.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content: answer, html: mdToHtml(answer), time: this.getTime() };
-        this.setData({ msgList: list, lastRequestTime: Date.now() });
-        storage.setChatHistory(list);
+        this.updateLastMsg(answer);
+        this.setData({ lastRequestTime: Date.now() });
       } catch (e) {
         const list = [...this.data.msgList];
         const errMsg = '⚠️ ' + (e.message || '调用失败');

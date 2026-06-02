@@ -213,70 +213,61 @@ Page({
   aiSendMessageWithText(text) {
     const msgs = [...this.data.aiMsgs, { role: 'user', content: text }];
     this.setData({ aiMsgs: msgs, aiInputVal: '' });
+    const apiKey = wx.getStorageSync('ai_api_key') || '';
+    if (apiKey) this.aiSend(text);
+    else this.usePreset(text);
+  },
 
-    // 加一条"思考中"
-    const msgs2 = [...msgs, { role: 'ai', content: '🤔 思考中...' }];
-    this.setData({ aiMsgs: msgs2 });
-
-    // 调用AI
+  // AI请求
+  _aiBusy: false, _aiLastReq: 0,
+  aiSend(msgText) {
     const apiKey = wx.getStorageSync('ai_api_key') || '';
     const apiUrl = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
     const apiModel = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
-
-    if (apiKey) {
-      this.aiQueue(apiUrl, apiKey, apiModel, text);
-    } else {
-      this.usePreset(text);
-    }
+    if (!apiKey) { this.usePreset(msgText); return; }
+    if (this._aiBusy) { wx.showToast({ title: '⏳ 请等待上一条回复', icon: 'none' }); return; }
+    const msgs = this.data.aiMsgs;
+    this.setData({ aiMsgs: [...msgs, { role: 'ai', content: '🤔 思考中...' }] });
+    this._aiBusy = true;
+    // 限流等待
+    const wait = Math.max(0, 8000 - (Date.now() - this._aiLastReq));
+    setTimeout(() => this.aiCall(apiUrl, apiKey, apiModel, msgText), wait);
   },
 
-  // AI请求队列（防429）
-  _aiPending: false, _aiLastReq: 0,
-  aiQueue(apiUrl, apiKey, apiModel, question) {
-    if (this._aiPending) {
-      wx.showToast({ title: '已有请求处理中', icon: 'none' });
-      return;
-    }
-    const now = Date.now();
-    const wait = Math.max(0, 5000 - (now - this._aiLastReq)); // 5秒间隔
-    this._aiPending = true;
-    setTimeout(() => {
-      this.callAI(apiUrl, apiKey, apiModel, question);
-    }, wait);
-  },
-
-  callAI(apiUrl, apiKey, apiModel, question, retryCount) {
-    retryCount = retryCount || 0;
-    const timer = setTimeout(() => { this._aiPending = false; this.updateAiLastMessage('⚠️ 请求超时，请检查网络'); }, 60000);
+  aiCall(apiUrl, apiKey, apiModel, question, retry) {
+    retry = retry || 0;
+    const timer = setTimeout(() => { this._aiBusy = false; this.updateAiLastMessage('⚠️ 请求超时'); }, 60000);
     wx.request({
-      url: apiUrl,
-      method: 'POST',
+      url: apiUrl, method: 'POST',
       header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
       data: {
         model: apiModel,
         messages: [
-          { role: 'system', content: '你是全能AI助手，擅长电路分析但不限于此。用中文回答，适当使用Markdown格式（如**加粗**、-列表、```代码```）。公式用纯文本（如U=IR、∑u=0、XL=ωL）。当前课件：' + this.data.title + '，第' + this.data.currentPage + '页。' },
+          { role: 'system', content: '你是全能AI助手，擅长电路分析但不限于此。用中文回答，适当使用Markdown格式（**加粗**、-列表、```代码```）。公式用纯文本（如U=IR、∑u=0）。当前：' + this.data.title + '第' + this.data.currentPage + '页。' },
           { role: 'user', content: question }
         ],
         temperature: 0.8, max_tokens: 2000
       },
       success: (res) => {
-        clearTimeout(timer); this._aiLastReq = Date.now();
-        if (res.statusCode === 429 && retryCount < 3) {
-          this.updateAiLastMessage('⏳ 请求繁忙，' + (retryCount + 1) + '秒后重试...');
-          setTimeout(() => { this.callAI(apiUrl, apiKey, apiModel, question, retryCount + 1); }, (retryCount + 1) * 5000);
+        clearTimeout(timer);
+        if (res.statusCode === 429 && retry < 3) {
+          this.updateAiLastMessage('⏳ 繁忙，' + ((retry + 1) * 3) + '秒后重试...');
+          setTimeout(() => this.aiCall(apiUrl, apiKey, apiModel, question, retry + 1), (retry + 1) * 3000);
           return;
         }
-        this._aiPending = false;
+        this._aiBusy = false; this._aiLastReq = Date.now();
         let answer;
-        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等一会儿再试';
-        else if (res.statusCode === 401 || res.statusCode === 403) answer = '⚠️ API Key无效，去设置中检查';
+        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等15秒再试';
+        else if (res.statusCode === 401 || res.statusCode === 403) answer = '⚠️ API Key无效';
         else if (res.statusCode !== 200) answer = '⚠️ API错误(' + res.statusCode + ')';
-        else if (res.data && res.data.choices && res.data.choices[0]) answer = res.data.choices[0].message.content;
-        else answer = '⚠️ AI返回格式异常';
+        else if (res.data?.choices?.[0]) answer = res.data.choices[0].message.content;
+        else answer = '⚠️ 返回格式异常';
         this.updateAiLastMessage(answer);
       },
-      fail: (err) => { clearTimeout(timer); this._aiPending = false; this.updateAiLastMessage('⚠️ AI调用失败：' + (err.errMsg || '请到AI答疑页设置API Key')); }
+      fail: (err) => {
+        clearTimeout(timer); this._aiBusy = false; this._aiLastReq = Date.now();
+        this.updateAiLastMessage('⚠️ 网络错误，检查API设置');
+      }
     });
   },
 
