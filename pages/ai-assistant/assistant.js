@@ -109,10 +109,14 @@ Page({
   },
 
   updMsg(c) {
-    const list = [...this.data.msgList];
-    list[list.length-1] = { id:'m'+Date.now(), role:'assistant', content:c, html:mdToHtml(c), time:this.getTime() };
-    this.setData({ msgList: list });
-    storage.setChatHistory(list);
+    try {
+      const list = [...this.data.msgList];
+      list[list.length-1] = { id:'m'+Date.now(), role:'assistant', content:c, html:mdToHtml(c), time:this.getTime() };
+      this.setData({ msgList: list });
+      storage.setChatHistory(list);
+    } catch(e) {
+      this.setData({ msgList: [...this.data.msgList, { id:'m'+Date.now(), role:'assistant', content:c, time:this.getTime() }] });
+    }
   },
 
   // === 设置 ===

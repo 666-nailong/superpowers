@@ -221,12 +221,15 @@ Page({
   // AI请求
   _busy: false, _lastReq: 0, _retry: 0,
   aiSend(t) {
-    const k = wx.getStorageSync('ai_api_key') || '', u = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions', m = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
+    const k = wx.getStorageSync('ai_api_key') || '';
+    const u = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+    const m = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
     if (!k) { this.usePreset(t); return; }
     if (this._busy) { wx.showToast({ title: '⏳ 等待回复', icon:'none' }); return; }
     this.setData({ aiMsgs: [...this.data.aiMsgs, { role:'ai', content:'🤔 思考中...' }] });
     this._busy = true; this._retry = 0;
-    setTimeout(() => this.aiCall(u, k, m, t), Math.max(0, 3000 - (Date.now() - this._lastReq)));
+    const delay = Math.max(0, 3000 - (Date.now() - this._lastReq));
+    setTimeout(() => this.aiCall(u, k, m, t), delay);
   },
   aiCall(u, k, m, q) {
     const t = setTimeout(() => { this._busy = false; this.updAI('⚠️ 超时重试'); }, 60000);
@@ -256,9 +259,14 @@ Page({
     });
   },
   updAI(c) {
-    const msgs = this.data.aiMsgs;
-    msgs[msgs.length-1] = { role:'ai', content:c, html:mdToHtml(c) };
-    this.setData({ aiMsgs: msgs });
+    try {
+      const msgs = [...this.data.aiMsgs];
+      msgs[msgs.length-1] = { role:'ai', content:c, html:mdToHtml(c) };
+      this.setData({ aiMsgs: msgs });
+    } catch(e) {
+      // fallback: just set text
+      this.setData({ aiMsgs: [...this.data.aiMsgs, { role:'ai', content:c }] });
+    }
   },
 
   usePreset(question) {
@@ -273,9 +281,13 @@ Page({
   },
 
   updateAiLastMessage(content) {
-    const msgs = this.data.aiMsgs;
-    msgs[msgs.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content: content, html: mdToHtml(content) };
-    this.setData({ aiMsgs: msgs });
+    try {
+      const msgs = [...this.data.aiMsgs];
+      msgs[msgs.length - 1] = { role: 'assistant', content: content, html: mdToHtml(content) };
+      this.setData({ aiMsgs: msgs });
+    } catch(e) {
+      this.setData({ aiMsgs: [...this.data.aiMsgs, { role: 'assistant', content: content }] });
+    }
   },
 
   // ===== 全屏查看 =====
