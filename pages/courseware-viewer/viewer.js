@@ -275,9 +275,6 @@ Page({
     this.setData({ aiMsgs: msgs });
   },
 
-
-  },
-
   // ===== 全屏查看 =====
   enterFullScreen(e) {
     const src = e.currentTarget.dataset.src;
