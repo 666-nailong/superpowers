@@ -238,15 +238,16 @@ Page({
       return;
     }
     const now = Date.now();
-    const wait = Math.max(0, 3000 - (now - this._aiLastReq)); // 3秒间隔
+    const wait = Math.max(0, 5000 - (now - this._aiLastReq)); // 5秒间隔
     this._aiPending = true;
     setTimeout(() => {
       this.callAI(apiUrl, apiKey, apiModel, question);
     }, wait);
   },
 
-  callAI(apiUrl, apiKey, apiModel, question) {
-    const timer = setTimeout(() => { this._aiPending = false; this.updateAiLastMessage('⚠️ 请求超时，请检查网络'); }, 45000);
+  callAI(apiUrl, apiKey, apiModel, question, retryCount) {
+    retryCount = retryCount || 0;
+    const timer = setTimeout(() => { this._aiPending = false; this.updateAiLastMessage('⚠️ 请求超时，请检查网络'); }, 60000);
     wx.request({
       url: apiUrl,
       method: 'POST',
@@ -260,9 +261,15 @@ Page({
         temperature: 0.8, max_tokens: 2000
       },
       success: (res) => {
-        clearTimeout(timer); this._aiPending = false; this._aiLastReq = Date.now();
+        clearTimeout(timer); this._aiLastReq = Date.now();
+        if (res.statusCode === 429 && retryCount < 3) {
+          this.updateAiLastMessage('⏳ 请求繁忙，' + (retryCount + 1) + '秒后重试...');
+          setTimeout(() => { this.callAI(apiUrl, apiKey, apiModel, question, retryCount + 1); }, (retryCount + 1) * 5000);
+          return;
+        }
+        this._aiPending = false;
         let answer;
-        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等10秒再试';
+        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等一会儿再试';
         else if (res.statusCode === 401 || res.statusCode === 403) answer = '⚠️ API Key无效，去设置中检查';
         else if (res.statusCode !== 200) answer = '⚠️ API错误(' + res.statusCode + ')';
         else if (res.data && res.data.choices && res.data.choices[0]) answer = res.data.choices[0].message.content;

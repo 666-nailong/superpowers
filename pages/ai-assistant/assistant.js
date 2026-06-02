@@ -142,9 +142,10 @@ Page({
     storage.setChatHistory(list);
   },
 
-  callAIAPI(question) {
+  async callAIAPI(question, retryCount) {
+    retryCount = retryCount || 0;
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('请求超时')), 45000);
+      const timer = setTimeout(() => reject(new Error('请求超时')), 60000);
       wx.request({
         url: this.data.apiUrl,
         method: 'POST',
@@ -152,15 +153,25 @@ Page({
         data: {
           model: this.data.apiModel,
           messages: [
-            { role: 'system', content: '你是全能AI助手，擅长电路分析但不限于此。可以用中文回答任何问题。公式用纯文本（如U=IR、∑u=0、P=UI·cosφ）。不要用LaTeX或Markdown格式。' },
+            { role: 'system', content: '你是全能AI助手，可以回答任何问题。用中文回答，适当使用Markdown格式（**加粗**、-列表、```代码```）。公式用纯文本（如U=IR、∑u=0）。' },
             { role: 'user', content: question }
           ],
           temperature: 0.8, max_tokens: 2000
         },
         success: (res) => {
           clearTimeout(timer);
-          if (res.statusCode === 429) reject(new Error('请求频繁，等几秒再试'));
-          else if (res.statusCode === 401 || res.statusCode === 403) reject(new Error('API Key无效'));
+          if (res.statusCode === 429) {
+            if (retryCount < 3) {
+              this.updateLastMsg('⏳ 请求繁忙，' + ((retryCount + 1) * 3) + '秒后自动重试...');
+              setTimeout(() => {
+                this.callAIAPI(question, retryCount + 1).then(resolve).catch(reject);
+              }, (retryCount + 1) * 3000);
+            } else {
+              reject(new Error('请求频繁，稍后再试'));
+            }
+            return;
+          }
+          if (res.statusCode === 401 || res.statusCode === 403) reject(new Error('API Key无效'));
           else if (res.statusCode !== 200) reject(new Error('错误码' + res.statusCode));
           else if (res.data?.choices?.[0]) resolve(res.data.choices[0].message.content);
           else if (res.data?.error) reject(new Error(res.data.error.message || 'API错误'));
