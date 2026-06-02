@@ -262,14 +262,13 @@ Page({
     this.updAI(c);
   },
   updAI(c) {
-    try {
-      const msgs = [...this.data.aiMsgs];
-      msgs[msgs.length-1] = { role:'ai', content:c, html:mdToHtml(c) };
-      this.setData({ aiMsgs: msgs });
-    } catch(e) {
-      // fallback: just set text
-      this.setData({ aiMsgs: [...this.data.aiMsgs, { role:'ai', content:c }] });
+    const msgs = [...this.data.aiMsgs];
+    if (msgs.length === 0) { msgs.push({ role:'ai', content:c }); }
+    else {
+      try { msgs[msgs.length-1] = { role:'ai', content:c, html:mdToHtml(c) }; }
+      catch(e) { msgs[msgs.length-1] = { role:'ai', content:c }; }
     }
+    this.setData({ aiMsgs: msgs });
   },
 
   usePreset(question) {
@@ -284,12 +283,11 @@ Page({
   },
 
   updateAiLastMessage(content) {
-    try {
-      const msgs = [...this.data.aiMsgs];
-      msgs[msgs.length - 1] = { role: 'assistant', content: content, html: mdToHtml(content) };
+    const msgs = [...this.data.aiMsgs];
+    if (msgs.length > 0) {
+      try { msgs[msgs.length-1] = { role:'assistant', content:content, html:mdToHtml(content) }; }
+      catch(e) { msgs[msgs.length-1] = { role:'assistant', content:content }; }
       this.setData({ aiMsgs: msgs });
-    } catch(e) {
-      this.setData({ aiMsgs: [...this.data.aiMsgs, { role: 'assistant', content: content }] });
     }
   },
 

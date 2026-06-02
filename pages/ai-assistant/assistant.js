@@ -7,8 +7,8 @@ Page({
   data: {
     msgList: [], imgList: [], inputValue: '',
     hasApiKey: false, showSettingsPanel: false,
-    apiUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-    apiKey: '', apiModel: 'GLM-4.6', showKey: false,
+    apiUrl: 'https://api.deepseek.com/v1/chat/completions',
+    apiKey: '', apiModel: 'deepseek-chat', showKey: false,
     apiSelected: 0, apiCustomUrl: false, canSend: false,
     imgPreview: '', imgFile: '',
     apiOptions: ['DeepSeek（推荐⭐）','智谱GLM-4-Flash（免费不限速）','硅基流动（多模型聚合）','智谱GLM-4.6','智谱GLM-4.5-Air','阿里通义千问','OpenAI','百度文心','月之暗面Kimi','自定义'],
@@ -30,8 +30,8 @@ Page({
   onShow() {
     const history = storage.getChatHistory();
     const apiKey = wx.getStorageSync('ai_api_key') || '';
-    const apiUrl = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-    const apiModel = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
+    const apiUrl = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com/v1/chat/completions';
+    const apiModel = wx.getStorageSync('ai_api_model') || 'deepseek-chat';
     const apiSelected = wx.getStorageSync('ai_api_selected') || 0;
     this.setData({ msgList: history, hasApiKey: !!apiKey, apiKey, apiUrl, apiModel, apiSelected, apiCustomUrl: apiSelected === 9 });
   },
@@ -114,14 +114,15 @@ Page({
   },
 
   updMsg(c) {
-    try {
-      const list = [...this.data.msgList];
-      list[list.length-1] = { id:'m'+Date.now(), role:'assistant', content:c, html:mdToHtml(c), time:this.getTime() };
-      this.setData({ msgList: list });
-      storage.setChatHistory(list);
-    } catch(e) {
-      this.setData({ msgList: [...this.data.msgList, { id:'m'+Date.now(), role:'assistant', content:c, time:this.getTime() }] });
+    // 替换最后一条"思考中..."为AI回复
+    const list = [...this.data.msgList];
+    if (list.length === 0) { list.push({ id:'m'+Date.now(), role:'assistant', content:c, time:this.getTime() }); }
+    else {
+      try { list[list.length-1] = { id:'m'+Date.now(), role:'assistant', content:c, html:mdToHtml(c), time:this.getTime() }; }
+      catch(e) { list[list.length-1] = { id:'m'+Date.now(), role:'assistant', content:c, time:this.getTime() }; }
     }
+    this.setData({ msgList: list });
+    storage.setChatHistory(list);
   },
 
   // === 设置 ===
