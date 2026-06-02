@@ -66,7 +66,8 @@
           <view class="ai-chat-suggest" bindtap="aiSendSuggestion" data-q="这页有什么公式？">这页有什么公式？</view>
         </view>
         <view wx:for="{{aiMsgs}}" wx:key="id" class="ai-msg {{item.role}}" id="ai-msg-{{index}}">
-          <view class="ai-msg-text">{{item.content}}</view>
+          <rich-text wx:if="{{item.html}}" class="ai-msg-text" nodes="{{item.html}}"></rich-text>
+          <view wx:else class="ai-msg-text">{{item.content}}</view>
         </view>
       </scroll-view>
       <view class="ai-chat-input-row">

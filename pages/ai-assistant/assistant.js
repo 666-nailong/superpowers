@@ -1,6 +1,7 @@
 const storage = require('../../utils/storage');
 const { findAnswer } = require('../../utils/preset-answers');
 const { findInPdfContent } = require('../../utils/local-qa');
+const { mdToHtml } = require('../../utils/md-to-html');
 
 Page({
   data: {
@@ -89,7 +90,7 @@ Page({
   },
 
   addMessage(role, content) {
-    const msg = { id: 'msg_' + Date.now(), role, content, time: this.getTime() };
+    const msg = { id: 'msg_' + Date.now(), role, content, html: role === 'assistant' ? mdToHtml(content) : '', time: this.getTime() };
     const list = [...this.data.msgList, msg];
     this.setData({ msgList: list });
     storage.setChatHistory(list);
@@ -110,12 +111,13 @@ Page({
       try {
         const answer = await this.callAIAPI(question);
         const list = [...this.data.msgList];
-        list[list.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content: answer, time: this.getTime() };
+        list[list.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content: answer, html: mdToHtml(answer), time: this.getTime() };
         this.setData({ msgList: list, lastRequestTime: Date.now() });
         storage.setChatHistory(list);
       } catch (e) {
         const list = [...this.data.msgList];
-        list[list.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content: '⚠️ ' + (e.message || '调用失败'), time: this.getTime() };
+        const errMsg = '⚠️ ' + (e.message || '调用失败');
+        list[list.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content: errMsg, html: errMsg, time: this.getTime() };
         this.setData({ msgList: list });
         storage.setChatHistory(list);
       }
@@ -135,7 +137,7 @@ Page({
 
   updateLastMsg(content) {
     const list = [...this.data.msgList];
-    list[list.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content, time: this.getTime() };
+    list[list.length - 1] = { id: 'msg_' + Date.now(), role: 'assistant', content, html: mdToHtml(content), time: this.getTime() };
     this.setData({ msgList: list });
     storage.setChatHistory(list);
   },
