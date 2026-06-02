@@ -216,23 +216,19 @@ Page({
 
   showFreeApiGuide() {
     const links = [
+      { name: '⭐ 智谱AI（推荐）', url: 'https://open.bigmodel.cn/usercenter/apikeys' },
       { name: 'DeepSeek', url: 'https://platform.deepseek.com/api_keys' },
       { name: '硅基流动', url: 'https://cloud.siliconflow.cn' },
-      { name: '阿里通义千问', url: 'https://bailian.console.aliyun.com/?tab=model#/model-market' },
-      { name: '智谱AI', url: 'https://open.bigmodel.cn/usercenter/apikeys' }
+      { name: '阿里通义千问', url: 'https://bailian.console.aliyun.com/?tab=model#/model-market' }
     ];
-    let content = '选择平台复制注册链接：\n\n';
-    links.forEach(l => { content += l.name + '\n' + l.url + '\n\n'; });
-    wx.showModal({
-      title: '🔑 免费获取API Key',
-      content: content + '复制到浏览器打开注册',
-      confirmText: '复制DeepSeek',
-      cancelText: '复制硅基流动',
+    wx.showActionSheet({
+      itemList: links.map(l => l.name + ' - 复制链接'),
       success: (r) => {
-        let url = '';
-        if (r.confirm) url = links[0].url;
-        else if (r.cancel) url = links[1].url;
-        if (url) wx.setClipboardData({ data: url, success: () => wx.showToast({ title: '已复制', icon: 'success' }) });
+        const link = links[r.tapIndex];
+        wx.setClipboardData({
+          data: link.url,
+          success: () => wx.showToast({ title: link.name + ' 链接已复制', icon: 'success' })
+        });
       }
     });
   }

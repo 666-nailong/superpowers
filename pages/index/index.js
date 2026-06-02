@@ -74,31 +74,19 @@ Page({
 
   showFreeApiGuide() {
     const links = [
-      { name: '① DeepSeek（推荐）', desc: '注册送500万tokens', url: 'https://platform.deepseek.com/api_keys' },
-      { name: '② 硅基流动', desc: '注册送2000万tokens', url: 'https://cloud.siliconflow.cn' },
-      { name: '③ 阿里通义千问', desc: '注册送100万tokens', url: 'https://bailian.console.aliyun.com/?tab=model#/model-market' },
-      { name: '④ 月之暗面Kimi', desc: '注册送额度', url: 'https://kimi.moonshot.cn/' }
+      { name: '⭐ 智谱AI（推荐）', url: 'https://open.bigmodel.cn/usercenter/apikeys' },
+      { name: 'DeepSeek', url: 'https://platform.deepseek.com/api_keys' },
+      { name: '硅基流动', url: 'https://cloud.siliconflow.cn' },
+      { name: '阿里通义千问', url: 'https://bailian.console.aliyun.com/?tab=model#/model-market' }
     ];
-    let content = '点击下方平台名称复制注册链接：\n\n';
-    links.forEach((l, i) => {
-      content += `${l.name} ${l.desc}\n${l.url}\n\n`;
-    });
-    content += '复制链接后粘贴到浏览器打开注册，获取API Key后在AI答疑 → ⚙️设置中填入。';
-    wx.showModal({
-      title: '🔑 免费获取API Key',
-      content: content,
-      confirmText: '复制DeepSeek链接',
-      cancelText: '复制硅基流动',
-      success: (res) => {
-        let url = '';
-        if (res.confirm) url = links[0].url;
-        else if (res.cancel) url = links[1].url;
-        if (url) {
-          wx.setClipboardData({
-            data: url,
-            success: () => { wx.showToast({ title: '链接已复制！', icon: 'success' }); }
-          });
-        }
+    wx.showActionSheet({
+      itemList: links.map(l => l.name + ' - 复制注册链接'),
+      success: (r) => {
+        const link = links[r.tapIndex];
+        wx.setClipboardData({
+          data: link.url,
+          success: () => wx.showToast({ title: link.name + ' 链接已复制', icon: 'success' })
+        });
       }
     });
   },
