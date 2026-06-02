@@ -12,7 +12,7 @@ Page({
     apiKey: '',
     apiModel: 'glm-4-plus',
     showKey: false,
-    apiOptions: ['DeepSeek', 'OpenAI', '阿里通义千问', '硅基流动', '百度文心', '月之暗面Kimi', '智谱ChatGLM', '自定义'],
+    apiOptions: ['DeepSeek', 'OpenAI', '阿里通义千问', '硅基流动', '百度文心', '月之暗面Kimi', '智谱GLM-4.6', '智谱GLM-4.5-Air', '自定义'],
     apiSelected: 0,
     apiCustomUrl: false,
     apiPresets: {
@@ -22,7 +22,8 @@ Page({
       '硅基流动': { path: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct' },
       '百度文心': { path: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', model: 'ernie-3.5-8k' },
       '月之暗面Kimi': { path: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
-      '智谱ChatGLM': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-plus' }
+      '智谱GLM-4.6': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-plus' },
+      '智谱GLM-4.5-Air': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-air' }
     },
     suggestions: [
       '叠加定理的内容是什么？',
@@ -159,7 +160,7 @@ Page({
     const idx = parseInt(e.detail.value);
     const name = this.data.apiOptions[idx];
     const preset = this.data.apiPresets[name];
-    const isCustom = idx === 7;
+    const isCustom = idx === 8;
     if (preset) {
       this.setData({ apiSelected: idx, apiUrl: preset.path, apiModel: preset.model, apiCustomUrl: isCustom });
     } else {
