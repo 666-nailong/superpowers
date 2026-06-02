@@ -232,31 +232,34 @@ Page({
     setTimeout(() => this.aiCall(u, k, m, t), delay);
   },
   aiCall(u, k, m, q) {
-    const t = setTimeout(() => { this._busy = false; this.updAI('⚠️ 超时重试'); }, 60000);
+    const t = setTimeout(() => { this.doneAI('⚠️ 超时，60秒无响应'); }, 60000);
     wx.request({
       url: u, method:'POST',
       header: { 'Content-Type':'application/json', 'Authorization':'Bearer '+k },
-      data: { model:m, messages:[{ role:'system', content:'你是全能AI助手。用中文回答，**重点**加粗、- 列表、```代码```。公式用纯文本（U=IR）。当前：'+this.data.title+'第'+this.data.currentPage+'页。' }, { role:'user', content:q }], temperature:0.6, max_tokens:1500 },
+      data: { model:m, messages:[{ role:'system', content:'你是AI助手。用中文回答，**重点**加粗、- 列表。公式用纯文本（U=IR）。当前：'+this.data.title+'第'+this.data.currentPage+'页。' }, { role:'user', content:q }], temperature:0.6, max_tokens:1500 },
       success: (r) => {
         clearTimeout(t);
         if (r.statusCode === 429 && this._retry < 3) {
           this._retry++;
-          const w = this._retry * 5000;
-          this.updAI(`⏳ 繁忙，${w/1000}秒后重试...`);
-          setTimeout(() => this.aiCall(u, k, m, q), w);
-          return;
+          const s = this._retry * 10;
+          wx.showToast({ title: `繁忙，${s}秒后重试(${this._retry}/3)`, icon:'none', duration:s*1000 });
+          setTimeout(() => this.aiCall(u, k, m, q), s * 1000);
+          return; // keep showing "思考中..."
         }
-        this._busy = false; this._lastReq = Date.now();
-        let a;
-        if (r.statusCode === 429) a = '⚠️ 太频繁，等30秒后重试或切DeepSeek';
-        else if (r.statusCode === 401) a = '⚠️ Key无效，去AI设置检查';
-        else if (r.statusCode !== 200) a = '⚠️ 错误'+r.statusCode+'，切其他服务商';
-        else if (r.data?.choices?.[0]) a = r.data.choices[0].message.content;
-        else a = '⚠️ 返回异常';
-        this.updAI(a);
+        this.doneAI(
+          r.statusCode === 429 ? '⚠️ 太频繁，等1分钟再试。可切DeepSeek API' :
+          r.statusCode === 401 ? '⚠️ Key无效，去AI答疑页检查Key' :
+          r.statusCode !== 200 ? '⚠️ 错误'+r.statusCode+'，可切换其他服务商' :
+          r.data?.choices?.[0] ? r.data.choices[0].message.content :
+          '⚠️ 返回异常'
+        );
       },
-      fail: () => { clearTimeout(t); this._busy = false; this.updAI('⚠️ 网络错误'); }
+      fail: () => { clearTimeout(t); this.doneAI('⚠️ 网络错误'); }
     });
+  },
+  doneAI(c) {
+    this._busy = false; this._lastReq = Date.now();
+    this.updAI(c);
   },
   updAI(c) {
     try {

@@ -63,8 +63,8 @@ Page({
   // === AI ===
   getAnswer(q) {
     if (this.data.hasApiKey && this.data.apiKey) {
-      if (this._busy) { wx.showToast({ title: '⏳ 等待回复', icon:'none' }); return; }
-      this.addMsg('assistant', '🤔 思考中...');
+      if (this._busy) { wx.showToast({ title: '⏳ 请等待上一条回复', icon:'none' }); return; }
+      this.addMsg('assistant', '🧠 思考中...');
       this._busy = true; this._retry = 0;
       this.reqAI(q);
       return;
@@ -77,35 +77,39 @@ Page({
   },
 
   reqAI(q) {
-    const t = setTimeout(() => { this._busy=false; this.updMsg('⚠️ 超时，请重试'); }, 60000);
+    const t = setTimeout(() => { this.doneAI('⚠️ 请求超时，60秒无响应'); }, 60000);
     wx.request({
       url: this.data.apiUrl, method:'POST',
       header: { 'Content-Type':'application/json', 'Authorization':'Bearer '+this.data.apiKey },
       data: {
         model: this.data.apiModel,
-        messages: [{ role:'system', content:'你是全能AI助手。用中文回答，**重点**加粗、- 列表分项、```代码```块。公式用纯文本（U=IR、R=U/I）。回答简洁有条理。' }, { role:'user', content:q }],
+        messages: [{ role:'system', content:'你是AI助手。用中文回答，**重点**加粗、- 列表。公式用纯文本（U=IR）。回答简洁。' }, { role:'user', content:q }],
         temperature:0.6, max_tokens:1500
       },
       success: (res) => {
         clearTimeout(t);
         if (res.statusCode === 429 && this._retry < 3) {
           this._retry++;
-          const w = this._retry * 5000;
-          this.updMsg(`⏳ 繁忙，${w/1000}秒后重试...`);
-          setTimeout(() => this.reqAI(q), w);
-          return;
+          const s = this._retry * 10;
+          wx.showToast({ title: `繁忙，${s}秒后重试(${this._retry}/3)`, icon:'none', duration:s*1000 });
+          setTimeout(() => this.reqAI(q), s * 1000);
+          return; // 不更新消息，保持"思考中..."
         }
-        this._busy = false;
-        let a;
-        if (res.statusCode === 429) a = '⚠️ 请求太频繁，等30秒再试。可切到DeepSeek API（免费量大）';
-        else if (res.statusCode === 401) a = '⚠️ API Key无效，去⚙️设置中检查';
-        else if (res.statusCode !== 200) a = '⚠️ 错误' + res.statusCode + '，可切换其他服务商';
-        else if (res.data?.choices?.[0]) a = res.data.choices[0].message.content;
-        else a = '⚠️ 返回异常';
-        this.updMsg(a);
+        this.doneAI(
+          res.statusCode === 429 ? '⚠️ 请求太频繁，等1分钟再试。或切换到DeepSeek API（免费额度大）' :
+          res.statusCode === 401 ? '⚠️ API Key无效，去⚙️设置中检查' :
+          res.statusCode !== 200 ? '⚠️ 错误'+res.statusCode+'，可切换其他服务商' :
+          res.data?.choices?.[0] ? res.data.choices[0].message.content :
+          '⚠️ 返回异常'
+        );
       },
-      fail: (e) => { clearTimeout(t); this._busy = false; this.updMsg('⚠️ 网络错误，检查设置'); }
+      fail: () => { clearTimeout(t); this.doneAI('⚠️ 网络错误，请检查API地址和Key'); }
     });
+  },
+
+  doneAI(c) {
+    this._busy = false;
+    this.updMsg(c);
   },
 
   updMsg(c) {
