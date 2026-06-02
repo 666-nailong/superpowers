@@ -220,7 +220,7 @@ Page({
     // 调用AI（与AI助手页相同的逻辑）
     const apiKey = wx.getStorageSync('ai_api_key') || '';
     const apiUrl = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com';
-    const apiModel = wx.getStorageSync('ai_api_model') || 'deepseek-chat';
+    const apiModel = wx.getStorageSync('ai_api_model') || 'glm-4-plus';
 
     if (apiKey) {
       this.callAI(apiUrl, apiKey, apiModel, text);
@@ -230,6 +230,7 @@ Page({
   },
 
   callAI(apiUrl, apiKey, apiModel, question) {
+    const timer = setTimeout(() => { this.updateAiLastMessage('⚠️ 请求超时，请检查网络或API设置'); }, 30000);
     wx.request({
       url: apiUrl,
       method: 'POST',
@@ -243,10 +244,11 @@ Page({
         temperature: 0.7, max_tokens: 1500
       },
       success: (res) => {
+        clearTimeout(timer);
         const answer = (res.data && res.data.choices && res.data.choices[0]) ? res.data.choices[0].message.content : '（AI返回异常）';
         this.updateAiLastMessage(answer);
       },
-      fail: () => { this.updateAiLastMessage('⚠️ AI调用失败，请检查API设置'); }
+      fail: (err) => { clearTimeout(timer); this.updateAiLastMessage('⚠️ AI调用失败：' + (err.errMsg || '请检查API设置')); }
     });
   },
 

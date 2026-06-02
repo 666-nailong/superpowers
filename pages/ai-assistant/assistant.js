@@ -10,7 +10,7 @@ Page({
     showSettingsPanel: false,
     apiUrl: 'https://api.deepseek.com',
     apiKey: '',
-    apiModel: 'deepseek-chat',
+    apiModel: 'glm-4-plus',
     showKey: false,
     apiOptions: ['DeepSeek', 'OpenAI', '阿里通义千问', '硅基流动', '百度文心', '月之暗面Kimi', '智谱ChatGLM', '自定义'],
     apiSelected: 0,
@@ -22,7 +22,7 @@ Page({
       '硅基流动': { path: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct' },
       '百度文心': { path: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', model: 'ernie-3.5-8k' },
       '月之暗面Kimi': { path: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
-      '智谱ChatGLM': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash' }
+      '智谱ChatGLM': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-plus' }
     },
     suggestions: [
       '叠加定理的内容是什么？',
@@ -38,7 +38,7 @@ Page({
     const history = storage.getChatHistory();
     const apiKey = wx.getStorageSync('ai_api_key') || '';
     const apiUrl = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com';
-    const apiModel = wx.getStorageSync('ai_api_model') || 'deepseek-chat';
+    const apiModel = wx.getStorageSync('ai_api_model') || 'glm-4-plus';
     const apiSelected = wx.getStorageSync('ai_api_selected') || 0;
     this.setData({
       msgList: history,
@@ -123,6 +123,7 @@ Page({
         { role: 'user', content: question }
       ];
 
+      const timeout = setTimeout(() => { reject(new Error('请求超时')); }, 30000);
       wx.request({
         url: this.data.apiUrl,
         method: 'POST',
@@ -137,6 +138,7 @@ Page({
           max_tokens: 2000
         },
         success: (res) => {
+          clearTimeout(timeout);
           if (res.data && res.data.choices && res.data.choices[0]) {
             resolve(res.data.choices[0].message.content);
           } else if (res.data && res.data.error) {
@@ -145,7 +147,7 @@ Page({
             reject(new Error('返回格式异常'));
           }
         },
-        fail: (err) => reject(err)
+        fail: (err) => { clearTimeout(timeout); reject(err); }
       });
     });
   },
