@@ -9,18 +9,19 @@ Page({
     hasApiKey: false, showSettingsPanel: false,
     apiUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
     apiKey: '', apiModel: 'GLM-4.6', showKey: false,
-    apiSelected: 6, apiCustomUrl: false, canSend: false,
+    apiSelected: 0, apiCustomUrl: false, canSend: false,
     imgPreview: '', imgFile: '',
-    apiOptions: ['DeepSeek','OpenAI','阿里通义千问','硅基流动','百度文心','月之暗面Kimi','智谱GLM-4.6','智谱GLM-4.5-Air','自定义'],
+    apiOptions: ['DeepSeek（推荐⭐）','智谱GLM-4-Flash（免费不限速）','硅基流动（多模型聚合）','智谱GLM-4.6','智谱GLM-4.5-Air','阿里通义千问','OpenAI','百度文心','月之暗面Kimi','自定义'],
     apiPresets: {
-      'DeepSeek': { path: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat' },
-      'OpenAI': { path: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },
-      '阿里通义千问': { path: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-turbo' },
-      '硅基流动': { path: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct' },
-      '百度文心': { path: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', model: 'ernie-3.5-8k' },
-      '月之暗面Kimi': { path: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
+      'DeepSeek（推荐⭐）': { path: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat' },
+      '智谱GLM-4-Flash（免费不限速）': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'GLM-4-Flash' },
+      '硅基流动（多模型聚合）': { path: 'https://api.siliconflow.cn/v1/chat/completions', model: 'deepseek-ai/DeepSeek-V3' },
       '智谱GLM-4.6': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'GLM-4.6' },
-      '智谱GLM-4.5-Air': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'GLM-4.5-Air' }
+      '智谱GLM-4.5-Air': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'GLM-4.5-Air' },
+      '阿里通义千问': { path: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-turbo' },
+      'OpenAI': { path: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },
+      '百度文心': { path: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', model: 'ernie-3.5-8k' },
+      '月之暗面Kimi': { path: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' }
     },
     suggestions: ['叠加定理内容？','用三要素法求解一阶电路','解释戴维南定理','串联谐振特点？']
   },
@@ -31,8 +32,8 @@ Page({
     const apiKey = wx.getStorageSync('ai_api_key') || '';
     const apiUrl = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
     const apiModel = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
-    const apiSelected = wx.getStorageSync('ai_api_selected') || 6;
-    this.setData({ msgList: history, hasApiKey: !!apiKey, apiKey, apiUrl, apiModel, apiSelected, apiCustomUrl: apiSelected === 8 });
+    const apiSelected = wx.getStorageSync('ai_api_selected') || 0;
+    this.setData({ msgList: history, hasApiKey: !!apiKey, apiKey, apiUrl, apiModel, apiSelected, apiCustomUrl: apiSelected === 9 });
   },
 
   onInput(e) { const val = e.detail.value; this.setData({ inputValue: val, canSend: !!(val.trim() || this.data.imgFile) }); },
@@ -133,8 +134,8 @@ Page({
   onApiSelect(e) {
     const idx = parseInt(e.detail.value);
     const preset = this.data.apiPresets[this.data.apiOptions[idx]];
-    if (preset) this.setData({ apiSelected: idx, apiUrl: preset.path, apiModel: preset.model, apiCustomUrl: idx===8 });
-    else this.setData({ apiSelected: idx, apiCustomUrl: idx===8 });
+    if (preset) this.setData({ apiSelected: idx, apiUrl: preset.path, apiModel: preset.model, apiCustomUrl: idx===9 });
+    else this.setData({ apiSelected: idx, apiCustomUrl: idx===9 });
   },
   saveSettings() {
     wx.setStorageSync('ai_api_url', this.data.apiUrl);

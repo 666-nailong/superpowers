@@ -222,8 +222,8 @@ Page({
   _busy: false, _lastReq: 0, _retry: 0,
   aiSend(t) {
     const k = wx.getStorageSync('ai_api_key') || '';
-    const u = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-    const m = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
+    const u = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com/v1/chat/completions';
+    const m = wx.getStorageSync('ai_api_model') || 'deepseek-chat';
     if (!k) { this.usePreset(t); return; }
     if (this._busy) { wx.showToast({ title: '⏳ 等待回复', icon:'none' }); return; }
     this.setData({ aiMsgs: [...this.data.aiMsgs, { role:'ai', content:'🤔 思考中...' }] });
