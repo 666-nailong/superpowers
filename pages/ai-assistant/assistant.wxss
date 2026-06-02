@@ -1,168 +1,61 @@
-.page-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 0;
-  background: #F7F8FA;
-}
-
-/* 聊天列表 */
-.chat-list {
-  flex: 1;
-  padding: 32rpx;
-  padding-bottom: 20rpx;
-}
-
-/* 欢迎页 */
-.welcome-msg {
-  text-align: center;
-  padding: 60rpx 32rpx;
-}
-.ai-icon {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background: #1A365D;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48rpx;
-  margin: 0 auto 24rpx;
-}
-.welcome-title {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1A365D;
-  margin-bottom: 16rpx;
-}
-.welcome-desc {
-  font-size: 26rpx;
-  color: #4A5568;
-  line-height: 1.6;
-  margin-bottom: 40rpx;
-}
-
-/* 建议问题 */
-.suggestion-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
-.suggestion-item {
-  background: #FFFFFF;
-  border: 2rpx solid #E2E8F0;
-  border-radius: 12rpx;
-  padding: 24rpx;
-  font-size: 26rpx;
-  color: #1A365D;
-  text-align: left;
-}
-.suggestion-item:active {
-  background: rgba(26, 54, 93, 0.05);
-  border-color: #1A365D;
-}
-
-/* 消息行 */
-.msg-row {
-  display: flex;
-  margin-bottom: 24rpx;
-  align-items: flex-start;
-}
-.msg-user-row { justify-content: flex-end; }
-.msg-ai-row { justify-content: flex-start; }
-
-.msg-avatar {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  background: #1A365D;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-  margin-right: 16rpx;
-  flex-shrink: 0;
-}
-
-.msg-bubble {
-  max-width: 75%;
-  padding: 20rpx 24rpx;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  line-height: 1.6;
-  position: relative;
-}
-.msg-user {
-  background: #2B4C7E;
-  color: #fff;
-  border-bottom-right-radius: 4rpx;
-}
-.msg-ai {
-  background: #FFFFFF;
-  color: #1A202C;
-  border-bottom-left-radius: 4rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
-}
-.msg-text { white-space: pre-wrap; word-break: break-word; }
-.msg-time {
-  font-size: 20rpx;
-  color: #A0AEC0;
-  margin-top: 8rpx;
-  text-align: right;
-}
-
-/* 输入栏 */
-.input-bar {
-  display: flex;
-  align-items: center;
-  padding: 16rpx 24rpx;
-  background: #FFFFFF;
-  border-top: 2rpx solid #E2E8F0;
-  padding-bottom: env(safe-area-inset-bottom, 16rpx);
-}
-.msg-input {
-  flex: 1;
-  height: 72rpx;
-  background: #F7F8FA;
-  border-radius: 8rpx;
-  padding: 0 24rpx;
-  font-size: 28rpx;
-}
-.send-btn {
-  margin-left: 16rpx;
-  padding: 16rpx 32rpx;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  background: #E2E8F0;
-  color: #A0AEC0;
-}
-.send-btn.send-active {
-  background: #1A365D;
-  color: #fff;
-}
+.page-container { display:flex; flex-direction:column; height:100vh; background:#F7F8FA; }
 
 /* 顶部栏 */
 .top-bar { display:flex; align-items:center; justify-content:space-between; padding:20rpx 24rpx; background:#1A365D; color:#fff; }
+.top-left { display:flex; align-items:center; gap:16rpx; }
 .top-title { font-size:28rpx; font-weight:600; }
-.top-settings { font-size:28rpx; padding:8rpx; }
+.top-settings { font-size:32rpx; padding:8rpx; }
 
-/* 提示 */
-.api-tip { font-size:22rpx; color:#3B82F6; background:rgba(59,130,246,0.1); padding:12rpx 20rpx; border-radius:8rpx; margin:16rpx 0; }
+/* 聊天区域 */
+.chat-area { flex:1; padding:24rpx; padding-bottom:20rpx; overflow-y:scroll; }
+
+.welcome-msg { text-align:center; padding:40rpx 24rpx; }
+.ai-icon { width:80rpx; height:80rpx; border-radius:50%; background:#1A365D; color:#fff; display:flex; align-items:center; justify-content:center; font-size:40rpx; margin:0 auto 16rpx; }
+.welcome-title { font-size:30rpx; font-weight:700; color:#1A202C; margin-bottom:8rpx; }
+.welcome-desc { font-size:24rpx; color:#A0AEC0; margin-bottom:24rpx; }
+.api-tip { font-size:22rpx; color:#3B82F6; background:rgba(59,130,246,0.1); padding:12rpx 20rpx; border-radius:8rpx; margin-bottom:24rpx; }
+.suggestion-list { display:flex; flex-direction:column; gap:12rpx; }
+.suggestion-item { background:#fff; border:2rpx solid #E2E8F0; border-radius:12rpx; padding:20rpx 24rpx; font-size:26rpx; color:#1A365D; text-align:left; }
+.suggestion-item:active { background:rgba(26,54,93,0.05); }
+
+/* 消息 */
+.msg-row { display:flex; margin-bottom:20rpx; align-items:flex-start; }
+.user-row { justify-content:flex-end; }
+.ai-row { justify-content:flex-start; }
+.msg-avatar { width:48rpx; height:48rpx; border-radius:50%; background:#1A365D; color:#fff; display:flex; align-items:center; justify-content:center; font-size:24rpx; margin-right:12rpx; flex-shrink:0; }
+.msg-bubble { max-width:80%; padding:16rpx 20rpx; border-radius:12rpx; font-size:26rpx; line-height:1.6; }
+.user-bubble { background:#1A365D; color:#fff; border-bottom-right-radius:4rpx; }
+.ai-bubble { background:#fff; color:#1A202C; border-bottom-left-radius:4rpx; box-shadow:0 2rpx 8rpx rgba(0,0,0,0.04); }
+.msg-text { white-space:pre-wrap; word-break:break-word; }
+.msg-time { font-size:18rpx; color:rgba(255,255,255,0.5); margin-top:6rpx; text-align:right; display:block; }
+.ai-bubble .msg-time { color:#A0AEC0; }
+
+/* 图片 */
+.msg-img { width:100%; border-radius:8rpx; margin-bottom:8rpx; }
+
+/* 输入栏（固定底部） */
+.input-bar { background:#fff; border-top:2rpx solid #E2E8F0; padding:12rpx 24rpx; padding-bottom:env(safe-area-inset-bottom,12rpx); }
+.input-row { display:flex; align-items:center; gap:12rpx; }
+.input-btn { font-size:36rpx; padding:8rpx; }
+.msg-input { flex:1; height:68rpx; background:#F7F8FA; border-radius:8rpx; padding:0 20rpx; font-size:26rpx; }
+.send-btn { padding:14rpx 28rpx; border-radius:8rpx; font-size:26rpx; background:#E2E8F0; color:#A0AEC0; flex-shrink:0; }
+.send-btn.active { background:#1A365D; color:#fff; }
+.input-hint { display:flex; align-items:center; gap:8rpx; margin-top:8rpx; }
+.preview-img { width:80rpx; height:80rpx; border-radius:8rpx; }
+.preview-clear { font-size:28rpx; color:#EF4444; padding:8rpx; }
 
 /* 设置面板 */
 .settings-mask { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:100; display:flex; align-items:center; justify-content:center; }
-.settings-panel { background:#fff; border-radius:16rpx; padding:40rpx; width:650rpx; max-height:80vh; }
-.settings-title { font-size:32rpx; font-weight:700; text-align:center; margin-bottom:32rpx; }
-.settings-field { position:relative; margin-bottom:24rpx; }
-.settings-label { font-size:24rpx; color:#4A5568; display:block; margin-bottom:8rpx; }
-.settings-input { width:100%; height:72rpx; background:#F7F8FA; border:2rpx solid #E2E8F0; border-radius:8rpx; padding:0 24rpx; font-size:26rpx; box-sizing:border-box; }
-.settings-picker { width:100%; height:72rpx; background:#F7F8FA; border:2rpx solid #E2E8F0; border-radius:8rpx; padding:0 24rpx; font-size:26rpx; display:flex; align-items:center; color:#1A202C; }
-.settings-key-row { display:flex; align-items:center; gap:12rpx; }
-.settings-key-row .key-input { flex:1; }
-.settings-toggle { font-size:32rpx; padding:8rpx; flex-shrink:0; }
-.settings-hint { font-size:22rpx; color:#A0AEC0; margin-bottom:24rpx; line-height:1.5; }
+.settings-panel { background:#fff; border-radius:16rpx; padding:40rpx; width:650rpx; max-height:80vh; overflow-y:scroll; }
+.settings-title { font-size:32rpx; font-weight:700; text-align:center; margin-bottom:28rpx; }
+.settings-field { margin-bottom:20rpx; }
+.settings-label { font-size:24rpx; color:#4A5568; display:block; margin-bottom:6rpx; }
+.settings-input { width:100%; height:68rpx; background:#F7F8FA; border:2rpx solid #E2E8F0; border-radius:8rpx; padding:0 20rpx; font-size:26rpx; box-sizing:border-box; }
+.settings-picker { width:100%; height:68rpx; background:#F7F8FA; border:2rpx solid #E2E8F0; border-radius:8rpx; padding:0 20rpx; font-size:26rpx; display:flex; align-items:center; color:#1A202C; }
+.key-row { display:flex; align-items:center; gap:12rpx; }
+.key-row .key-input { flex:1; }
+.key-toggle { font-size:32rpx; padding:8rpx; flex-shrink:0; }
+.settings-hint { margin-bottom:24rpx; }
 .settings-btns { display:flex; gap:16rpx; }
 .settings-btn { flex:1; text-align:center; padding:20rpx; border-radius:12rpx; font-size:28rpx; }
 .settings-btn.primary { background:#1A365D; color:#fff; }

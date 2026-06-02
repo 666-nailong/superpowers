@@ -1,73 +1,97 @@
 <view class="page-container">
-  <!-- 顶部设置按钮 -->
+  <!-- 顶部栏 -->
   <view class="top-bar">
-    <text class="top-title">⚡ 电路分析 AI 助手</text>
-    <text class="top-settings" bindtap="showSettings">⚙️ 设置</text>
+    <view class="top-left">
+      <text class="top-title">🤖 AI 助手</text>
+      <text class="top-settings" bindtap="showSettings">⚙️</text>
+    </view>
+    <view class="top-right">
+      <text class="top-clear" wx:if="{{msgList.length > 0}}" bindtap="clearChat">🗑️</text>
+    </view>
   </view>
 
-  <!-- 聊天记录 -->
-  <scroll-view class="chat-list" scroll-y scroll-with-animation="{{true}}" scroll-into-view="msg-{{msgList.length - 1}}">
+  <!-- 聊天区域 -->
+  <scroll-view class="chat-area" scroll-y scroll-into-view="bottom-anchor" scroll-with-animation="{{true}}" upper-threshold="0">
     <view class="welcome-msg" wx:if="{{msgList.length === 0}}">
       <view class="ai-icon">⚡</view>
       <view class="welcome-title">电路分析 AI 助手</view>
-      <view class="welcome-desc">你好！我是电路分析学习助手，你可以问我任何电路分析相关的问题～</view>
-      <view wx:if="{{!hasApiKey}}" class="api-tip">💡 点击右上角 ⚙️ 设置 API Key 可启用AI大模型回答</view>
+      <view class="welcome-desc">问任何问题～</view>
+      <view wx:if="{{!hasApiKey}}" class="api-tip" bindtap="showSettings">💡 点⚙️设置API Key启用AI大模型，或使用内置问答</view>
       <view class="suggestion-list">
-        <view wx:for="{{suggestions}}" wx:key="index" class="suggestion-item" bindtap="sendSuggestion">
-          {{item}}
-        </view>
+        <view wx:for="{{suggestions}}" wx:key="index" class="suggestion-item" bindtap="sendSuggestion">{{item}}</view>
       </view>
     </view>
 
-    <view wx:for="{{msgList}}" wx:key="id" class="msg-row {{item.role === 'user' ? 'msg-user-row' : 'msg-ai-row'}}" id="msg-{{index}}">
+    <view wx:for="{{msgList}}" wx:key="id" class="msg-row {{item.role === 'user' ? 'user-row' : 'ai-row'}}" id="msg-{{index}}">
       <view wx:if="{{item.role === 'assistant'}}" class="msg-avatar">⚡</view>
-      <view class="msg-bubble {{item.role === 'user' ? 'msg-user' : 'msg-ai'}}">
+      <view class="msg-bubble {{item.role === 'user' ? 'user-bubble' : 'ai-bubble'}}">
         <text class="msg-text">{{item.content}}</text>
-        <view class="msg-time">{{item.time}}</view>
+        <text class="msg-time">{{item.time}}</text>
       </view>
     </view>
+    
+    <!-- 图片消息 -->
+    <view wx:for="{{imgList}}" wx:key="id" class="msg-row user-row">
+      <view class="msg-bubble user-bubble">
+        <image class="msg-img" src="{{item.src}}" mode="widthFix"></image>
+        <text wx:if="{{item.text}}" class="msg-text">{{item.text}}</text>
+        <text class="msg-time">{{item.time}}</text>
+      </view>
+    </view>
+
+    <view id="bottom-anchor"></view>
   </scroll-view>
 
-  <!-- 输入区 -->
+  <!-- 底部输入栏（固定，不随滚动） -->
   <view class="input-bar">
-    <input class="msg-input" placeholder="输入电路分析问题..." bindinput="onInput" value="{{inputValue}}" confirm-type="send" bindconfirm="sendMessage" />
-    <view class="send-btn {{inputValue.trim() ? 'send-active' : ''}}" bindtap="sendMessage">发送</view>
+    <view class="input-row">
+      <view class="input-btn" bindtap="pickImage">📷</view>
+      <input class="msg-input" placeholder="输入问题..." bindinput="onInput" value="{{inputValue}}" confirm-type="send" bindconfirm="sendMessage" cursor-spacing="100" />
+      <view class="send-btn {{canSend ? 'active' : ''}}" bindtap="sendMessage">发送</view>
+    </view>
+    <view class="input-hint" wx:if="{{imgPreview}}">
+      <image class="preview-img" src="{{imgPreview}}"></image>
+      <text class="preview-clear" bindtap="clearImage">✕</text>
+    </view>
   </view>
 
-  <!-- 设置弹窗 -->
+  <!-- 设置面板 -->
   <view wx:if="{{showSettingsPanel}}" class="settings-mask">
     <view class="settings-panel">
-      <view class="settings-title">⚙️ AI 设置</view>
-      
+      <view class="settings-title">⚙️ 设置</view>
+
       <view class="settings-field">
-        <text class="settings-label">选择API服务商</text>
+        <text class="settings-label">AI服务商</text>
         <picker mode="selector" range="{{apiOptions}}" bindchange="onApiSelect">
-          <view class="settings-picker">{{apiOptions[apiSelected] || '点击选择'}} ▾</view>
+          <view class="settings-picker">{{apiOptions[apiSelected]}} ▾</view>
         </picker>
       </view>
       
       <view wx:if="{{apiCustomUrl}}" class="settings-field">
-        <text class="settings-label">自定义 API 地址</text>
-        <input class="settings-input" placeholder="https://your-api.com/v1" value="{{apiUrl}}" bindinput="onApiUrlInput" />
+        <text class="settings-label">API地址</text>
+        <input class="settings-input" placeholder="https://" value="{{apiUrl}}" bindinput="onApiUrlInput" />
       </view>
 
       <view class="settings-field">
-        <text class="settings-label">模型名称</text>
-        <input class="settings-input" placeholder="deepseek-chat" value="{{apiModel}}" bindinput="onApiModelInput" />
+        <text class="settings-label">模型</text>
+        <input class="settings-input" placeholder="模型名称" value="{{apiModel}}" bindinput="onApiModelInput" />
       </view>
       
       <view class="settings-field">
         <text class="settings-label">API Key</text>
-        <view class="settings-key-row">
-          <input class="settings-input key-input" placeholder="sk-xxxxxxxxxxxxxxxx" value="{{apiKey}}" bindinput="onApiKeyInput" password="{{!showKey}}" />
-          <text class="settings-toggle" bindtap="toggleKeyShow">{{showKey ? '🙈' : '👁️'}}</text>
+        <view class="key-row">
+          <input class="settings-input key-input" placeholder="sk-..." value="{{apiKey}}" bindinput="onApiKeyInput" password="{{!showKey}}" />
+          <text class="key-toggle" bindtap="toggleKeyShow">{{showKey ? '🙈' : '👁️'}}</text>
         </view>
       </view>
 
-      <view class="settings-hint">💡 支持任何 OpenAI 兼容接口。不设置则使用内置预置问答库。</view>
+      <view class="settings-hint">
+        <text bindtap="showFreeApiGuide" style="color:#3B82F6">🔑 免费获取API Key</text>
+        <text style="color:#A0AEC0;font-size:22rpx;display:block;margin-top:8rpx">支持OpenAI兼容接口</text>
+      </view>
 
       <view class="settings-btns">
-        <view class="settings-btn secondary" bindtap="clearApiKey">清除</view>
+        <view class="settings-btn secondary" bindtap="clearApiKey">清除Key</view>
         <view class="settings-btn primary" bindtap="saveSettings">保存</view>
       </view>
       <view class="settings-close" bindtap="hideSettings">关闭</view>
