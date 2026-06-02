@@ -22,8 +22,8 @@ Page({
       '硅基流动': { path: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct' },
       '百度文心': { path: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions', model: 'ernie-3.5-8k' },
       '月之暗面Kimi': { path: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
-      '智谱GLM-4.6': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-plus' },
-      '智谱GLM-4.5-Air': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-air' }
+      '智谱GLM-4.6': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'GLM-4.6' },
+      '智谱GLM-4.5-Air': { path: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'GLM-4.5-Air' }
     },
     suggestions: [
       '叠加定理的内容是什么？',
@@ -140,7 +140,13 @@ Page({
         },
         success: (res) => {
           clearTimeout(timeout);
-          if (res.data && res.data.choices && res.data.choices[0]) {
+          if (res.statusCode === 429) {
+            reject(new Error('请求过于频繁，请稍后再试'));
+          } else if (res.statusCode === 401 || res.statusCode === 403) {
+            reject(new Error('API Key 无效或权限不足'));
+          } else if (res.statusCode !== 200) {
+            reject(new Error('API返回错误码: ' + res.statusCode));
+          } else if (res.data && res.data.choices && res.data.choices[0]) {
             resolve(res.data.choices[0].message.content);
           } else if (res.data && res.data.error) {
             reject(new Error(res.data.error.message || JSON.stringify(res.data.error)));

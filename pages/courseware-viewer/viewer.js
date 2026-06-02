@@ -245,7 +245,12 @@ Page({
       },
       success: (res) => {
         clearTimeout(timer);
-        const answer = (res.data && res.data.choices && res.data.choices[0]) ? res.data.choices[0].message.content : '（AI返回异常）';
+        let answer;
+        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等一会儿再试';
+        else if (res.statusCode === 401 || res.statusCode === 403) answer = '⚠️ API Key无效';
+        else if (res.statusCode !== 200) answer = '⚠️ API错误(' + res.statusCode + ')';
+        else if (res.data && res.data.choices && res.data.choices[0]) answer = res.data.choices[0].message.content;
+        else answer = '⚠️ AI返回格式异常';
         this.updateAiLastMessage(answer);
       },
       fail: (err) => { clearTimeout(timer); this.updateAiLastMessage('⚠️ AI调用失败：' + (err.errMsg || '请检查API设置')); }
