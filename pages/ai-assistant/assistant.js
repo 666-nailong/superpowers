@@ -216,18 +216,18 @@ Page({
 
   showFreeApiGuide() {
     const links = [
-      { name: '⭐ 智谱AI（推荐）', url: 'https://open.bigmodel.cn/usercenter/apikeys' },
-      { name: 'DeepSeek', url: 'https://platform.deepseek.com/api_keys' },
-      { name: '硅基流动', url: 'https://cloud.siliconflow.cn' },
-      { name: '阿里通义千问', url: 'https://bailian.console.aliyun.com/?tab=model#/model-market' }
+      { name: '⭐ 智谱AI 注册（推荐）', url: 'https://open.bigmodel.cn/usercenter/apikeys', doc: 'https://open.bigmodel.cn/dev/api/native-api/glm-4' },
+      { name: '智谱AI 使用教程', url: 'https://open.bigmodel.cn/dev/api/native-api/glm-4', doc: '' },
+      { name: 'DeepSeek 注册', url: 'https://platform.deepseek.com/api_keys', doc: 'https://platform.deepseek.com/api-docs' },
+      { name: '硅基流动 注册', url: 'https://cloud.siliconflow.cn', doc: '' }
     ];
     wx.showActionSheet({
-      itemList: links.map(l => l.name + ' - 复制链接'),
+      itemList: links.map(l => l.name),
       success: (r) => {
         const link = links[r.tapIndex];
         wx.setClipboardData({
           data: link.url,
-          success: () => wx.showToast({ title: link.name + ' 链接已复制', icon: 'success' })
+          success: () => wx.showToast({ title: '链接已复制', icon: 'success' })
         });
       }
     });
