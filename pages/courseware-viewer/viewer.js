@@ -238,7 +238,7 @@ Page({
       data: {
         model: apiModel,
         messages: [
-          { role: 'system', content: '你是电路分析课程的辅导老师。用中文回答，可以包含公式推导。当前课件：' + this.data.title + '，第' + this.data.currentPage + '页。' },
+          { role: 'system', content: '你是电路分析课程的辅导老师。用中文回答，公式用纯文本和Unicode表示（如U=IR、∑u=0、XL=ωL），不要用LaTeX格式，不要用Markdown标记。当前课件：' + this.data.title + '，第' + this.data.currentPage + '页。' },
           { role: 'user', content: question }
         ],
         temperature: 0.7, max_tokens: 1500

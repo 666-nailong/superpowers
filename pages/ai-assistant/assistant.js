@@ -120,7 +120,7 @@ Page({
   callAIAPI(question) {
     return new Promise((resolve, reject) => {
       const messages = [
-        { role: 'system', content: '你是一个电路分析课程的专业辅导老师。请用中文回答学生的电路分析问题，回答要详细、准确、有条理，可以包含公式推导。' },
+        { role: 'system', content: '你是一个电路分析课程的专业辅导老师。用中文回答，公式用纯文本和Unicode表示（如U=IR、∑u=0、P=UI·cosφ、XL=ωL、τ=RC等），不要用LaTeX格式（不要用\\( \\)或$$），不要用Markdown标记。回答要详细、有条理。' },
         { role: 'user', content: question }
       ];
 
