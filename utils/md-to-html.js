@@ -2,7 +2,8 @@
  * Markdown → HTML 渲染（微信小程序 rich-text 兼容）
  */
 function mdToHtml(text) {
-  if (!text) return '';
+  if (!text) return text || '';
+  if (typeof text !== 'string') return String(text);
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     

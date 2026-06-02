@@ -47,14 +47,18 @@ Page({
 
   sendMessage() {
     const text = this.data.inputValue.trim();
-    if (!text) return;
-    this.addMsg('user', text);
-    this.setData({ inputValue: '', canSend: false });
-    this.getAnswer(text);
+    if (!text && !this.data.imgFile) return;
+    this.addMsg('user', text || '[图片]');
+    if (this.data.imgFile) {
+      wx.getFileSystemManager().readFile({ filePath: this.data.imgFile, encoding:'base64', success: (r) => {} }); // 预加载图片
+    }
+    this.setData({ inputValue: '', imgPreview: '', imgFile: '', canSend: false });
+    this.getAnswer(text || '描述一下这张图片中的内容');
   },
   sendSuggestion(e) { const text = e.currentTarget.dataset.item; this.addMsg('user', text); this.getAnswer(text); },
   addMsg(role, content) {
-    const msg = { id: 'm'+Date.now(), role, content, html: role==='assistant' ? mdToHtml(content) : '', time: this.getTime() };
+    const id = 'm'+Date.now()+Math.random().toString(36).slice(2,5);
+    const msg = { id, role, content, html: role==='assistant' ? (()=>{ try{return mdToHtml(content)}catch(e){return ''} })() : '', time: this.getTime() };
     const list = [...this.data.msgList, msg];
     this.setData({ msgList: list });
     storage.setChatHistory(list);
@@ -114,13 +118,11 @@ Page({
   },
 
   updMsg(c) {
-    // 替换最后一条"思考中..."为AI回复
     const list = [...this.data.msgList];
-    if (list.length === 0) { list.push({ id:'m'+Date.now(), role:'assistant', content:c, time:this.getTime() }); }
-    else {
-      try { list[list.length-1] = { id:'m'+Date.now(), role:'assistant', content:c, html:mdToHtml(c), time:this.getTime() }; }
-      catch(e) { list[list.length-1] = { id:'m'+Date.now(), role:'assistant', content:c, time:this.getTime() }; }
-    }
+    if (list.length === 0) return;
+    const last = list[list.length-1];
+    let html = ''; try { html = mdToHtml(c); } catch(e) {}
+    list[list.length-1] = { id: last.id, role:'assistant', content:c, html, time:this.getTime() };
     this.setData({ msgList: list });
     storage.setChatHistory(list);
   },

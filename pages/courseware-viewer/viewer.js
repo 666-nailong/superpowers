@@ -189,106 +189,67 @@ Page({
   },
 
   // ===== AI 内联聊天 =====
-  toggleAIChat() {
-    this.setData({ showAIChat: !this.data.showAIChat, aiInputVal: '' });
-    if (!this.data.showAIChat) {
-      // 关闭时清空对话
-      this.setData({ aiMsgs: [] });
-    }
-  },
-
+  toggleAIChat() { this.setData({ showAIChat: !this.data.showAIChat, aiInputVal: '' }); if (!this.data.showAIChat) this.setData({ aiMsgs: [] }); },
   onAiInput(e) { this.setData({ aiInputVal: e.detail.value }); },
+  aiSendSuggestion(e) { this.aiSendText(e.currentTarget.dataset.q); },
+  aiSendMessage() { const t = this.data.aiInputVal.trim(); if (t) this.aiSendText(t); },
 
-  aiSendSuggestion(e) {
-    const q = e.currentTarget.dataset.q;
-    this.aiSendMessageWithText(q);
-  },
-
-  aiSendMessage() {
-    const text = this.data.aiInputVal.trim();
-    if (!text) return;
-    this.aiSendMessageWithText(text);
-  },
-
-  aiSendMessageWithText(text) {
-    const msgs = [...this.data.aiMsgs, { role: 'user', content: text }];
-    this.setData({ aiMsgs: msgs, aiInputVal: '' });
+  aiSendText(text) {
+    const thinkingId = 'think_' + Date.now();
+    this.setData({ aiMsgs: [...this.data.aiMsgs, { id: 'u'+Date.now(), role: 'user', content: text }, { id: thinkingId, role: 'ai', content: '🤔 思考中...' }], aiInputVal: '' });
     const apiKey = wx.getStorageSync('ai_api_key') || '';
-    if (apiKey) this.aiSend(text);
-    else this.usePreset(text);
+    if (apiKey) this.aiCall2(text, thinkingId);
+    else this.usePreset2(text, thinkingId);
   },
 
-  // AI请求
-  _busy: false, _lastReq: 0, _retry: 0,
-  aiSend(t) {
-    const k = wx.getStorageSync('ai_api_key') || '';
+  _busy: false, _retry: 0, _lastReq: 0,
+  aiCall2(question, thinkingId) {
     const u = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com/v1/chat/completions';
+    const k = wx.getStorageSync('ai_api_key') || '';
     const m = wx.getStorageSync('ai_api_model') || 'deepseek-chat';
-    if (!k) { this.usePreset(t); return; }
+    if (!k) { this.usePreset2(question, thinkingId); return; }
     if (this._busy) { wx.showToast({ title: '⏳ 等待回复', icon:'none' }); return; }
-    this.setData({ aiMsgs: [...this.data.aiMsgs, { role:'ai', content:'🤔 思考中...' }] });
     this._busy = true; this._retry = 0;
     const delay = Math.max(0, 3000 - (Date.now() - this._lastReq));
-    setTimeout(() => this.aiCall(u, k, m, t), delay);
+    setTimeout(() => this.doReq(u, k, m, question, thinkingId), delay);
   },
-  aiCall(u, k, m, q) {
-    const t = setTimeout(() => { this.doneAI('⚠️ 超时，60秒无响应'); }, 60000);
+
+  doReq(u, k, m, q, tid) {
+    const timer = setTimeout(() => { this._busy = false; this._lastReq = Date.now(); this.replaceMsg(tid, '⚠️ 超时'); }, 60000);
     wx.request({
       url: u, method:'POST',
       header: { 'Content-Type':'application/json', 'Authorization':'Bearer '+k },
       data: { model:m, messages:[{ role:'system', content:'你是AI助手。用中文回答，**重点**加粗、- 列表。公式用纯文本（U=IR）。当前：'+this.data.title+'第'+this.data.currentPage+'页。' }, { role:'user', content:q }], temperature:0.6, max_tokens:1500 },
       success: (r) => {
-        clearTimeout(t);
+        clearTimeout(timer);
         if (r.statusCode === 429 && this._retry < 3) {
-          this._retry++;
-          const s = this._retry * 10;
-          wx.showToast({ title: `繁忙，${s}秒后重试(${this._retry}/3)`, icon:'none', duration:s*1000 });
-          setTimeout(() => this.aiCall(u, k, m, q), s * 1000);
-          return; // keep showing "思考中..."
+          this._retry++; const s = this._retry * 10;
+          wx.showToast({ title: `繁忙，${s}秒后(${this._retry}/3)`, icon:'none', duration:s*1000 });
+          setTimeout(() => this.doReq(u, k, m, q, tid), s*1000); return;
         }
-        this.doneAI(
+        this._busy = false; this._lastReq = Date.now();
+        this.replaceMsg(tid,
           r.statusCode === 429 ? '⚠️ 太频繁，等1分钟再试。可切DeepSeek API' :
-          r.statusCode === 401 ? '⚠️ Key无效，去AI答疑页检查Key' :
+          r.statusCode === 401 ? '⚠️ Key无效，去AI答疑页检查' :
           r.statusCode !== 200 ? '⚠️ 错误'+r.statusCode+'，可切换其他服务商' :
-          r.data?.choices?.[0] ? r.data.choices[0].message.content :
-          '⚠️ 返回异常'
-        );
+          r.data?.choices?.[0] ? r.data.choices[0].message.content : '⚠️ 返回异常');
       },
-      fail: () => { clearTimeout(t); this.doneAI('⚠️ 网络错误'); }
+      fail: () => { clearTimeout(timer); this._busy = false; this._lastReq = Date.now(); this.replaceMsg(tid, '⚠️ 网络错误'); }
     });
   },
-  doneAI(c) {
-    this._busy = false; this._lastReq = Date.now();
-    this.updAI(c);
-  },
-  updAI(c) {
-    const msgs = [...this.data.aiMsgs];
-    if (msgs.length === 0) { msgs.push({ role:'ai', content:c }); }
-    else {
-      try { msgs[msgs.length-1] = { role:'ai', content:c, html:mdToHtml(c) }; }
-      catch(e) { msgs[msgs.length-1] = { role:'ai', content:c }; }
-    }
-    this.setData({ aiMsgs: msgs });
-  },
 
-  usePreset(question) {
-    const { findAnswer } = require('../../utils/preset-answers');
+  usePreset2(question, thinkingId) {
     setTimeout(() => {
-      const pdfAnswer = findInPdfContent(question);
-      if (pdfAnswer) { this.updateAiLastMessage(pdfAnswer); return; }
-      const presetAnswer = findAnswer(question);
-      if (presetAnswer) { this.updateAiLastMessage(presetAnswer); return; }
-      this.updateAiLastMessage('关于第' + this.data.currentPage + '页的内容，建议查看课件或设置API Key获取更详细的解答。');
+      const r = findInPdfContent(question) || require('../../utils/preset-answers').findAnswer(question) || '关于第' + this.data.currentPage + '页，建议查看课件或设置API Key。';
+      this.replaceMsg(thinkingId, r);
     }, 300);
   },
 
-  updateAiLastMessage(content) {
-    const msgs = [...this.data.aiMsgs];
-    if (msgs.length > 0) {
-      try { msgs[msgs.length-1] = { role:'assistant', content:content, html:mdToHtml(content) }; }
-      catch(e) { msgs[msgs.length-1] = { role:'assistant', content:content }; }
-      this.setData({ aiMsgs: msgs });
-    }
+  replaceMsg(id, content) {
+    let html = '';
+    try { html = mdToHtml(content); } catch(e) {}
+    const msgs = this.data.aiMsgs.map(m => m.id === id ? { id, role:'ai', content, html } : m);
+    this.setData({ aiMsgs: msgs });
   },
 
   // ===== 全屏查看 =====
