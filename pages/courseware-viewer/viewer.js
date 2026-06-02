@@ -218,20 +218,35 @@ Page({
     const msgs2 = [...msgs, { role: 'ai', content: '🤔 思考中...' }];
     this.setData({ aiMsgs: msgs2 });
 
-    // 调用AI（与AI助手页相同的逻辑）
+    // 调用AI
     const apiKey = wx.getStorageSync('ai_api_key') || '';
-    const apiUrl = wx.getStorageSync('ai_api_url') || 'https://api.deepseek.com';
-    const apiModel = wx.getStorageSync('ai_api_model') || 'glm-4-plus';
+    const apiUrl = wx.getStorageSync('ai_api_url') || 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+    const apiModel = wx.getStorageSync('ai_api_model') || 'GLM-4.6';
 
     if (apiKey) {
-      this.callAI(apiUrl, apiKey, apiModel, text);
+      this.aiQueue(apiUrl, apiKey, apiModel, text);
     } else {
       this.usePreset(text);
     }
   },
 
+  // AI请求队列（防429）
+  _aiPending: false, _aiLastReq: 0,
+  aiQueue(apiUrl, apiKey, apiModel, question) {
+    if (this._aiPending) {
+      wx.showToast({ title: '已有请求处理中', icon: 'none' });
+      return;
+    }
+    const now = Date.now();
+    const wait = Math.max(0, 3000 - (now - this._aiLastReq)); // 3秒间隔
+    this._aiPending = true;
+    setTimeout(() => {
+      this.callAI(apiUrl, apiKey, apiModel, question);
+    }, wait);
+  },
+
   callAI(apiUrl, apiKey, apiModel, question) {
-    const timer = setTimeout(() => { this.updateAiLastMessage('⚠️ 请求超时，请检查网络或API设置'); }, 30000);
+    const timer = setTimeout(() => { this._aiPending = false; this.updateAiLastMessage('⚠️ 请求超时，请检查网络'); }, 45000);
     wx.request({
       url: apiUrl,
       method: 'POST',
@@ -239,22 +254,22 @@ Page({
       data: {
         model: apiModel,
         messages: [
-          { role: 'system', content: '你是电路分析课程的辅导老师。用中文回答，公式用纯文本和Unicode表示（如U=IR、∑u=0、XL=ωL），不要用LaTeX格式，不要用Markdown标记。当前课件：' + this.data.title + '，第' + this.data.currentPage + '页。' },
+          { role: 'system', content: '你是全能AI助手，擅长电路分析但不限于此。用中文回答，适当使用Markdown格式（如**加粗**、-列表、```代码```）。公式用纯文本（如U=IR、∑u=0、XL=ωL）。当前课件：' + this.data.title + '，第' + this.data.currentPage + '页。' },
           { role: 'user', content: question }
         ],
-        temperature: 0.7, max_tokens: 1500
+        temperature: 0.8, max_tokens: 2000
       },
       success: (res) => {
-        clearTimeout(timer);
+        clearTimeout(timer); this._aiPending = false; this._aiLastReq = Date.now();
         let answer;
-        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等一会儿再试';
-        else if (res.statusCode === 401 || res.statusCode === 403) answer = '⚠️ API Key无效';
+        if (res.statusCode === 429) answer = '⚠️ 请求太频繁，等10秒再试';
+        else if (res.statusCode === 401 || res.statusCode === 403) answer = '⚠️ API Key无效，去设置中检查';
         else if (res.statusCode !== 200) answer = '⚠️ API错误(' + res.statusCode + ')';
         else if (res.data && res.data.choices && res.data.choices[0]) answer = res.data.choices[0].message.content;
         else answer = '⚠️ AI返回格式异常';
         this.updateAiLastMessage(answer);
       },
-      fail: (err) => { clearTimeout(timer); this.updateAiLastMessage('⚠️ AI调用失败：' + (err.errMsg || '请检查API设置')); }
+      fail: (err) => { clearTimeout(timer); this._aiPending = false; this.updateAiLastMessage('⚠️ AI调用失败：' + (err.errMsg || '请到AI答疑页设置API Key')); }
     });
   },
 
