@@ -1,75 +1,50 @@
 /**
- * Markdown → HTML 渲染（微信小程序 rich-text 兼容）
+ * Markdown → HTML 渲染（适配微信小程序 rich-text）
+ * rich-text 只支持标准 HTML 标签：div, span, p, br, strong, em, code, pre, blockquote 等
+ * 不支持：view, text, scroll-view 等微信组件
  */
 function mdToHtml(text) {
-  if (!text) return text || '';
-  if (typeof text !== 'string') return String(text);
-  let h = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    
-    // 代码块 ```...``` 或 ~~~...~~~
-    .replace(/(```|~~~)(\w*)\n?([\s\S]*?)\1/g, '<view style="background:#1E293B;color:#E2E8F0;padding:20rpx 24rpx;border-radius:12rpx;font-size:24rpx;margin:16rpx 0;font-family:monospace;white-space:pre-wrap;line-height:1.6;overflow-x:scroll">$3</view>')
-    
-    // 行内代码
-    .replace(/`([^`]+)`/g, '<text style="background:#F1F5F9;color:#1A365D;padding:2rpx 10rpx;border-radius:4rpx;font-size:24rpx;font-family:monospace">$1</text>')
-    
-    // 标题 ###
-    .replace(/^### (.+)$/gm, '<view style="font-size:30rpx;font-weight:700;margin:24rpx 0 8rpx;color:#1A202C">$1</view>')
-    .replace(/^## (.+)$/gm, '<view style="font-size:32rpx;font-weight:700;margin:28rpx 0 10rpx;color:#1A202C">$1</view>')
-    .replace(/^# (.+)$/gm, '<view style="font-size:36rpx;font-weight:700;margin:32rpx 0 12rpx;color:#1A202C">$1</view>')
-    
-    // 加粗 ** ** 或 __ __
-    .replace(/\*\*(.+?)\*\*/g, '<text style="font-weight:700">$1</text>')
-    .replace(/__(.+?)__/g, '<text style="font-weight:700">$1</text>')
-    
-    // 斜体 * * 或 _ _
-    .replace(/\*(.+?)\*/g, '<text style="font-style:italic">$1</text>')
-    .replace(/_(.+?)_/g, '<text style="font-style:italic">$1</text>')
-    
-    // 删除线 ~~ ~~
-    .replace(/~~(.+?)~~/g, '<text style="text-decoration:line-through;color:#A0AEC0">$1</text>')
-    
-    // 引用 >
-    .replace(/^>\s+(.+)$/gm, '<view style="border-left:6rpx solid #3B82F6;padding:12rpx 20rpx;margin:12rpx 0;background:rgba(59,130,246,0.05);border-radius:4rpx;color:#4A5568">$1</view>')
-    
-    // 分割线 --- 或 ***
-    .replace(/^[-*]{3,}\s*$/gm, '<view style="height:2rpx;background:#E2E8F0;margin:24rpx 0"></view>')
-    
-    // 表格
-    .replace(/^\|(.+)\|$/gm, (m) => {
-      const cells = m.split('|').filter(c => c.trim());
-      if (cells[0] && cells[0].match(/^[-:\s]+$/)) return '';
-      return '<view style="display:flex;gap:8rpx;padding:6rpx 12rpx;border-bottom:2rpx solid #E2E8F0">' +
-        cells.map(c => `<text style="flex:1;font-size:24rpx">${c.trim()}</text>`).join('') + '</view>';
-    })
-    
-    // 无序列表 - 或 *（带缩进支持）
+  if (!text || typeof text !== 'string') return text || '';
+  
+  // 先处理代码块（避免被后面的规则破坏）
+  let blocks = [];
+  text = text.replace(/(```|~~~)(\w*)\n?([\s\S]*?)\1/g, (m, lang, syntax) => {
+    const code = m.replace(/```\w*\n?|```/g, '').replace(/~~~\w*\n?|~~~/g, '').trim();
+    blocks.push('<pre style="background:#1E293B;color:#E2E8F0;padding:12px 16px;border-radius:8px;font-size:13px;margin:12px 0;font-family:monospace;white-space:pre-wrap;line-height:1.6;overflow-x:auto">' + escHtml(code) + '</pre>');
+    return '%%BLOCK' + (blocks.length - 1) + '%%';
+  });
+
+  const h = escHtml(text)
+    .replace(/%%BLOCK(\d+)%%/g, (m, i) => blocks[parseInt(i)] || '')
+    .replace(/`([^`]+)`/g, '<code style="background:#F1F5F9;color:#1A365D;padding:1px 6px;border-radius:3px;font-size:13px;font-family:monospace">$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    .replace(/~~(.+?)~~/g, '<del style="color:#A0AEC0">$1</del>')
+    .replace(/^### (.+)$/gm, '<h3 style="font-size:16px;font-weight:700;margin:16px 0 6px;color:#1A202C">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 style="font-size:17px;font-weight:700;margin:18px 0 8px;color:#1A202C">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 style="font-size:19px;font-weight:700;margin:20px 0 8px;color:#1A202C">$1</h1>')
+    .replace(/^>\s+(.+)$/gm, '<blockquote style="border-left:4px solid #3B82F6;padding:8px 14px;margin:10px 0;background:rgba(59,130,246,0.05);border-radius:4px;color:#4A5568">$1</blockquote>')
+    .replace(/^[-*]{3,}\s*$/gm, '<hr style="border:none;border-top:1px solid #E2E8F0;margin:16px 0">')
     .replace(/^(\s*)[-*]\s+(.+)$/gm, (m, indent, content) => {
-      const pad = Math.min(indent.length / 2, 3) * 20;
-      return `<view style="display:flex;margin:6rpx 0;padding-left:${pad}rpx"><text style="margin-right:12rpx;color:#3B82F6;font-size:28rpx">•</text><text style="flex:1">${content}</text></view>`;
+      const pad = Math.min(indent.length, 8);
+      return '<div style="display:flex;margin:4px 0;padding-left:' + pad + 'px"><span style="margin-right:8px;color:#3B82F6;font-size:14px">•</span><span style="flex:1">' + content + '</span></div>';
     })
-    
-    // 有序列表 1. 2.
     .replace(/^(\s*)\d+[.．]\s+(.+)$/gm, (m, indent, content) => {
       const num = m.match(/\d+/)[0];
-      return `<view style="display:flex;margin:6rpx 0"><text style="margin-right:12rpx;min-width:32rpx;color:#A0AEC0">${num}.</text><text style="flex:1">${content}</text></view>`;
+      return '<div style="display:flex;margin:4px 0"><span style="margin-right:8px;color:#A0AEC0;min-width:20px">' + num + '.</span><span style="flex:1">' + content + '</span></div>';
     })
-    
-    // 行内公式 $...$
-    .replace(/\$(.+?)\$/g, '<text style="font-style:italic;font-family:serif">$1</text>')
-    
-    // 链接 [text](url)
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<text style="color:#3B82F6;text-decoration:underline">$1</text>')
-    
-    // 换行处理
-    .replace(/\n\n/g, '</view><view style="margin:10rpx 0">')
-    .replace(/\n/g, '<br/>')
-    
-    // 包裹
-    .replace(/^/, '<view style="line-height:1.8;font-size:26rpx;color:#1A202C">')
-    .replace(/$/, '</view>');
+    .replace(/\$(.+?)\$/g, '<i style="font-family:serif">$1</i>')
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<span style="color:#3B82F6;text-decoration:underline">$1</span>')
+    .replace(/\n\n/g, '</p><p style="margin:8px 0">')
+    .replace(/\n/g, '<br>');
 
-  return h;
+  return '<p style="line-height:1.8;font-size:14px;color:#1A202C;margin:0">' + h + '</p>';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 module.exports = { mdToHtml };
