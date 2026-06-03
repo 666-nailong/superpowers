@@ -22,11 +22,15 @@
       </view>
     </view>
 
+    <!-- 消息列表 -->
     <view wx:for="{{msgList}}" wx:key="id" class="msg-row {{item.role === 'user' ? 'user-row' : 'ai-row'}}">
       <view wx:if="{{item.role === 'assistant'}}" class="msg-avatar">⚡</view>
       <view class="msg-bubble {{item.role === 'user' ? 'user-bubble' : 'ai-bubble'}}">
+        <!-- 图片 -->
+        <image wx:if="{{item.img}}" class="msg-img" src="{{item.img}}" mode="widthFix" bindtap="previewImg" data-src="{{item.img}}"></image>
+        <!-- 文字 -->
         <rich-text wx:if="{{item.html}}" nodes="{{item.html}}" class="msg-text"></rich-text>
-        <text wx:else class="msg-text">{{item.content}}</text>
+        <text wx:elif="{{item.content}}" class="msg-text">{{item.content}}</text>
         <text class="msg-time">{{item.time}}</text>
       </view>
     </view>
@@ -34,12 +38,25 @@
     <view id="bottom-anchor"></view>
   </scroll-view>
 
-  <!-- 底部输入栏 -->
+  <!-- 输入栏 -->
   <view class="input-bar">
-    <view class="input-row">
-      <input class="msg-input" placeholder="输入问题..." bindinput="onInput" value="{{inputValue}}" confirm-type="send" bindconfirm="sendMessage" cursor-spacing="100" />
-      <view class="send-btn {{inputValue.trim() ? 'active' : ''}}" bindtap="sendMessage">发送</view>
+    <!-- 图片预览区 -->
+    <view class="input-preview" wx:if="{{pendingImg}}">
+      <image class="preview-thumb" src="{{pendingImg}}" mode="aspectFill"></image>
+      <text class="preview-close" bindtap="clearPendingImg">✕</text>
+      <text class="preview-hint">建议裁剪图片只保留题目部分</text>
     </view>
+    <!-- 输入行 -->
+    <view class="input-row">
+      <view class="btn-plus" bindtap="showImgPicker">+</view>
+      <input class="msg-input" placeholder="输入问题..." bindinput="onInput" value="{{inputValue}}" confirm-type="send" bindconfirm="sendMessage" cursor-spacing="100" />
+      <view class="send-btn {{canSend ? 'active' : ''}}" bindtap="sendMessage">发送</view>
+    </view>
+  </view>
+
+  <!-- 全屏图片预览 -->
+  <view wx:if="{{previewSrc}}" class="preview-mask" bindtap="closePreview">
+    <image class="preview-full" src="{{previewSrc}}" mode="widthFix" catchtap="previewImgStopPropagation"></image>
   </view>
 
   <!-- 设置面板 -->

@@ -5,7 +5,8 @@ const { mdToHtml } = require('../../utils/md-to-html');
 
 Page({
   data: {
-    msgList: [], inputValue: '',
+    msgList: [], inputValue: '', canSend: false,
+    pendingImg: '', previewSrc: '',
     hasApiKey: false, showSettingsPanel: false,
     apiUrl: 'https://api.deepseek.com/v1/chat/completions',
     apiKey: '', apiModel: 'deepseek-chat', showKey: false,
@@ -38,27 +39,51 @@ Page({
     });
   },
 
-  onInput(e) { this.setData({ inputValue: e.detail.value }); },
+  onInput(e) { this.setData({ inputValue: e.detail.value, canSend: !!(e.detail.value.trim() || this.data.pendingImg) }); },
+
+  showImgPicker() {
+    wx.showActionSheet({
+      itemList: ['拍照', '从相册选择'],
+      success: (r) => {
+        wx.chooseImage({
+          count: 1, sizeType: ['compressed'], sourceType: [r.tapIndex === 0 ? 'camera' : 'album'],
+          success: (res) => {
+            wx.compressImage({ src: res.tempFilePaths[0], quality: 80,
+              success: (c) => this.setData({ pendingImg: c.tempFilePath, canSend: true }),
+              fail: () => this.setData({ pendingImg: res.tempFilePaths[0], canSend: true })
+            });
+          },
+          fail: () => wx.showToast({ title: '图片选择失败', icon: 'none' })
+        });
+      }
+    });
+  },
+
+  clearPendingImg() { this.setData({ pendingImg: '', canSend: !!(this.data.inputValue.trim()) }); },
+
+  previewImg(e) { this.setData({ previewSrc: e.currentTarget.dataset.src }); },
+  closePreview() { this.setData({ previewSrc: '' }); },
 
   sendMessage() {
     const text = this.data.inputValue.trim();
-    if (!text) return;
-    this.pushMsg('user', text);
-    this.setData({ inputValue: '' });
-    this.getAnswer(text);
+    const img = this.data.pendingImg;
+    if (!text && !img) return;
+    this.pushMsg('user', text, img);
+    this.setData({ inputValue: '', pendingImg: '', canSend: false });
+    this.getAnswer(text || '请详细分析这张电路图片，给出解题步骤', img);
   },
 
   sendSuggestion(e) {
     const text = e.currentTarget.dataset.item;
-    this.pushMsg('user', text);
+    this.pushMsg('user', text, '');
     this.getAnswer(text);
   },
 
-  pushMsg(role, content) {
+  pushMsg(role, content, img) {
     const id = 'm' + Date.now() + Math.random().toString(36).slice(2,6);
     let html = '';
-    if (role === 'assistant') try { html = mdToHtml(content); } catch(e) {}
-    const msgs = [...this.data.msgList, { id, role, content, html, time: this.now() }];
+    if (role === 'assistant' && content) try { html = mdToHtml(content); } catch(e) {}
+    const msgs = [...this.data.msgList, { id, role, content, html, img: img || '', time: this.now() }];
     this.setData({ msgList: msgs });
     storage.setChatHistory(msgs);
   },
@@ -66,12 +91,12 @@ Page({
   now() { return new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }); },
 
   // === AI ===
-  getAnswer(q) {
+  getAnswer(q, imgPath) {
     if (this.data.hasApiKey && this.data.apiKey) {
       if (this._busy) { wx.showToast({ title: '⏳ 请等待上一条回复', icon: 'none' }); return; }
       this.pushMsg('assistant', '🧠 思考中...');
       this._busy = true; this._retry = 0;
-      this.reqAI(q);
+      this.reqAI(q, imgPath || '');
       return;
     }
     this.pushMsg('assistant', '🤔 思考中...');
@@ -81,15 +106,19 @@ Page({
     }, 200);
   },
 
-  reqAI(q) {
+  reqAI(q, imgPath) {
     const timer = setTimeout(() => { this._busy = false; this.updMsg('⚠️ 请求超时'); }, 60000);
+    
+    // 构建消息（支持图片）
+    const userMsg = imgPath ? this.buildImageMsg(q, imgPath) : { role: 'user', content: q };
+    
     wx.request({
       url: this.data.apiUrl, method: 'POST',
       header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.data.apiKey },
       data: {
         model: this.data.apiModel,
-        messages: [{ role: 'system', content: '你是AI助手。用中文回答，**重点**加粗、- 列表。公式用纯文本（U=IR）。回答简洁。' }, { role: 'user', content: q }],
-        temperature: 0.6, max_tokens: 1500
+        messages: [{ role: 'system', content: '你是一位专业的大学电路分析老师。请仔细分析用户提供的电路图片和问题，给出清晰详细的解题步骤。重点说明使用哪些电路定律，并解释每一步计算过程。语言通俗易懂。' }, userMsg],
+        temperature: 0.6, max_tokens: 2000
       },
       success: (res) => {
         clearTimeout(timer);
@@ -97,7 +126,7 @@ Page({
           this._retry++;
           const s = this._retry * 10;
           wx.showToast({ title: `繁忙，${s}秒后重试(${this._retry}/3)`, icon: 'none', duration: s * 1000 });
-          setTimeout(() => this.reqAI(q), s * 1000);
+          setTimeout(() => this.reqAI(q, imgPath), s * 1000);
           return;
         }
         this._busy = false;
@@ -111,6 +140,24 @@ Page({
       },
       fail: () => { clearTimeout(timer); this._busy = false; this.updMsg('⚠️ 网络错误'); }
     });
+  },
+
+  buildImageMsg(text, imgPath) {
+    // 读图片为 base64
+    const fs = wx.getFileSystemManager();
+    try {
+      const base64 = fs.readFileSync(imgPath, 'base64');
+      const ext = imgPath.match(/\.(\w+)$/)?.[1] || 'jpeg';
+      return {
+        role: 'user',
+        content: [
+          { type: 'text', text: text || '请详细分析这张电路图片，给出解题步骤' },
+          { type: 'image_url', image_url: { url: `data:image/${ext};base64,${base64}` } }
+        ]
+      };
+    } catch(e) {
+      return { role: 'user', content: text || '请分析这张电路图片' };
+    }
   },
 
   updMsg(c) {
@@ -153,7 +200,7 @@ Page({
   clearChat() {
     wx.showModal({
       title: '清空对话', content: '确定？',
-      success: (r) => { if (r.confirm) { this.setData({ msgList: [] }); storage.setChatHistory([]); } }
+      success: (r) => { if (r.confirm) { this.setData({ msgList: [], pendingImg: '' }); storage.setChatHistory([]); } }
     });
   },
   showFreeApiGuide() {
