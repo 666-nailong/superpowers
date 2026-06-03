@@ -73,6 +73,24 @@ Page({
     this.getAnswer(text || '请详细分析这张电路图片，给出解题步骤', img);
   },
 
+  sendImgQuestion(text, imgPath) {
+    // 有图片：上传云存储 → 调云函数（保护API Key）
+    this.pushMsg('assistant', '🔍 正在分析电路...');
+    this._busy = true;
+    wx.showLoading({ title: '上传图片中...' });
+    this.uploadImg(imgPath).then((imgUrl) => {
+      wx.hideLoading();
+      return this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', imgUrl);
+    }).then((answer) => {
+      this._busy = false;
+      this.updMsg(answer);
+    }).catch((err) => {
+      wx.hideLoading();
+      this._busy = false;
+      this.updMsg('⚠️ ' + (err.message || 'AI分析失败，请重试'));
+    });
+  },
+
   sendSuggestion(e) {
     const text = e.currentTarget.dataset.item;
     this.pushMsg('user', text, '');
@@ -92,11 +110,17 @@ Page({
 
   // === AI ===
   getAnswer(q, imgPath) {
+    // 有图片走云函数（安全+多模态）
+    if (imgPath) {
+      this.sendImgQuestion(q, imgPath);
+      return;
+    }
+    // 纯文字走原有API路径
     if (this.data.hasApiKey && this.data.apiKey) {
       if (this._busy) { wx.showToast({ title: '⏳ 请等待上一条回复', icon: 'none' }); return; }
       this.pushMsg('assistant', '🧠 思考中...');
       this._busy = true; this._retry = 0;
-      this.reqAI(q, imgPath || '');
+      this.reqAI(q);
       return;
     }
     this.pushMsg('assistant', '🤔 思考中...');
@@ -143,7 +167,6 @@ Page({
   },
 
   buildImageMsg(text, imgPath) {
-    // 读图片为 base64
     const fs = wx.getFileSystemManager();
     try {
       const base64 = fs.readFileSync(imgPath, 'base64');
@@ -158,6 +181,41 @@ Page({
     } catch(e) {
       return { role: 'user', content: text || '请分析这张电路图片' };
     }
+  },
+
+  // ===== 云函数调用（图片走云端，保护API Key） =====
+  uploadImg(filePath) {
+    return new Promise((resolve, reject) => {
+      const ext = filePath.match(/\.(\w+)$/)?.[1] || 'jpg';
+      const cloudPath = 'chat_imgs/' + Date.now() + '.' + ext;
+      wx.cloud.uploadFile({
+        cloudPath, filePath,
+        success: (res) => {
+          // 获取临时 URL
+          wx.cloud.getTempFileURL({
+            fileList: [res.fileID],
+            success: (r) => resolve(r.fileList[0].tempFileURL),
+            fail: () => resolve(res.fileID) // fallback
+          });
+        },
+        fail: (err) => reject(err)
+      });
+    });
+  },
+
+  callAICloud(text, imgUrl) {
+    return new Promise((resolve, reject) => {
+      wx.cloud.callFunction({
+        name: 'aiChat',
+        data: { text, imgUrl },
+        success: (res) => {
+          const result = res.result || {};
+          if (result.code === 0) resolve(result.data);
+          else reject(new Error(result.message || 'AI服务异常'));
+        },
+        fail: (err) => reject(err)
+      });
+    });
   },
 
   updMsg(c) {
