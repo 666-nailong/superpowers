@@ -36,7 +36,7 @@ exports.main = async (event, context) => {
     // 集合不存在时忽略限制
   }
 
-  // 3. 构造消息体
+  // 3. 构造消息体（修复：统一用数组格式，智谱API支持）
   const userContent = [];
   if (text) userContent.push({ type: 'text', text });
   if (imgUrl) userContent.push({ type: 'image_url', image_url: { url: imgUrl } });
@@ -48,7 +48,7 @@ exports.main = async (event, context) => {
       model: 'glm-4v-flash',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userContent.length === 1 ? userContent[0].text : userContent }
+        { role: 'user', content: userContent } // 修复：直接传数组，不再判断长度
       ],
       temperature: 0.3,
       max_tokens: 2048
