@@ -74,21 +74,22 @@ Page({
   },
 
   sendImgQuestion(text, imgPath) {
-    // 有图片：上传云存储 → 调云函数（保护API Key）
+    // 本地读图片 → base64 → 直接调云函数（不走云存储，智谱外网无法访问临时链接）
     this.pushMsg('assistant', '🔍 正在分析电路...');
     this._busy = true;
-    wx.showLoading({ title: '上传图片中...' });
-    this.uploadImg(imgPath).then((imgUrl) => {
-      wx.hideLoading();
-      return this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', imgUrl);
-    }).then((answer) => {
+    try {
+      const base64 = wx.getFileSystemManager().readFileSync(imgPath, 'base64');
+      this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', base64).then((answer) => {
+        this._busy = false;
+        this.updMsg(answer);
+      }).catch((err) => {
+        this._busy = false;
+        this.updMsg('⚠️ ' + (err.message || 'AI分析失败'));
+      });
+    } catch (e) {
       this._busy = false;
-      this.updMsg(answer);
-    }).catch((err) => {
-      wx.hideLoading();
-      this._busy = false;
-      this.updMsg('⚠️ ' + (err.message || 'AI分析失败，请重试'));
-    });
+      this.updMsg('⚠️ 图片读取失败，请重试');
+    }
   },
 
   sendSuggestion(e) {
@@ -183,31 +184,12 @@ Page({
     }
   },
 
-  // ===== 云函数调用（图片走云端，保护API Key） =====
-  uploadImg(filePath) {
-    return new Promise((resolve, reject) => {
-      const ext = filePath.match(/\.(\w+)$/)?.[1] || 'jpg';
-      const cloudPath = 'chat_imgs/' + Date.now() + '.' + ext;
-      wx.cloud.uploadFile({
-        cloudPath, filePath,
-        success: (res) => {
-          // 获取临时 URL
-          wx.cloud.getTempFileURL({
-            fileList: [res.fileID],
-            success: (r) => resolve(r.fileList[0].tempFileURL),
-            fail: () => resolve(res.fileID) // fallback
-          });
-        },
-        fail: (err) => reject(err)
-      });
-    });
-  },
-
-  callAICloud(text, imgUrl) {
+  // ===== 云函数调用 =====
+  callAICloud(text, imgBase64) {
     return new Promise((resolve, reject) => {
       wx.cloud.callFunction({
         name: 'aiChat',
-        data: { text, imgUrl },
+        data: { text, imgUrl: imgBase64 },
         success: (res) => {
           const result = res.result || {};
           if (result.code === 0) resolve(result.data);

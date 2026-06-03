@@ -36,7 +36,12 @@ exports.main = async (event, context) => {
     // 集合不存在时忽略限制
   }
 
-  // 3. 构造消息体（修复：统一用数组格式，智谱API支持）
+  // 3. base64 前缀自动补齐（前端直接传原始base64，没有data:image前缀）
+  if (imgUrl && typeof imgUrl === 'string' && !imgUrl.startsWith('data:image/')) {
+    imgUrl = 'data:image/jpeg;base64,' + imgUrl;
+  }
+
+  // 4. 构造消息体（统一用数组格式，智谱API支持）
   const userContent = [];
   if (text) userContent.push({ type: 'text', text });
   if (imgUrl) userContent.push({ type: 'image_url', image_url: { url: imgUrl } });
