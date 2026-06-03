@@ -11,18 +11,18 @@
   </view>
 
   <!-- 聊天区域 -->
-  <scroll-view class="chat-area" scroll-y scroll-into-view="bottom-anchor" scroll-with-animation="{{true}}" upper-threshold="0">
+  <scroll-view class="chat-area" scroll-y scroll-into-view="bottom-anchor" scroll-with-animation="{{true}}">
     <view class="welcome-msg" wx:if="{{msgList.length === 0}}">
       <view class="ai-icon">⚡</view>
       <view class="welcome-title">电路分析 AI 助手</view>
       <view class="welcome-desc">问任何问题～</view>
       <view wx:if="{{!hasApiKey}}" class="api-tip" bindtap="showSettings">💡 点⚙️设置API Key启用AI大模型，或使用内置问答</view>
       <view class="suggestion-list">
-        <view wx:for="{{suggestions}}" wx:key="index" class="suggestion-item" bindtap="sendSuggestion">{{item}}</view>
+        <view wx:for="{{suggestions}}" wx:key="*this" class="suggestion-item" bindtap="sendSuggestion" data-item="{{item}}">{{item}}</view>
       </view>
     </view>
 
-    <view wx:for="{{msgList}}" wx:key="id" class="msg-row {{item.role === 'user' ? 'user-row' : 'ai-row'}}" id="msg-{{index}}">
+    <view wx:for="{{msgList}}" wx:key="id" class="msg-row {{item.role === 'user' ? 'user-row' : 'ai-row'}}">
       <view wx:if="{{item.role === 'assistant'}}" class="msg-avatar">⚡</view>
       <view class="msg-bubble {{item.role === 'user' ? 'user-bubble' : 'ai-bubble'}}">
         <rich-text wx:if="{{item.html}}" nodes="{{item.html}}" class="msg-text"></rich-text>
@@ -30,29 +30,15 @@
         <text class="msg-time">{{item.time}}</text>
       </view>
     </view>
-    
-    <!-- 图片消息 -->
-    <view wx:for="{{imgList}}" wx:key="id" class="msg-row user-row">
-      <view class="msg-bubble user-bubble">
-        <image class="msg-img" src="{{item.src}}" mode="widthFix"></image>
-        <text wx:if="{{item.text}}" class="msg-text">{{item.text}}</text>
-        <text class="msg-time">{{item.time}}</text>
-      </view>
-    </view>
 
     <view id="bottom-anchor"></view>
   </scroll-view>
 
-  <!-- 底部输入栏（固定，不随滚动） -->
+  <!-- 底部输入栏 -->
   <view class="input-bar">
     <view class="input-row">
-      <view class="input-btn" bindtap="pickImage">📷</view>
       <input class="msg-input" placeholder="输入问题..." bindinput="onInput" value="{{inputValue}}" confirm-type="send" bindconfirm="sendMessage" cursor-spacing="100" />
-      <view class="send-btn {{canSend ? 'active' : ''}}" bindtap="sendMessage">发送</view>
-    </view>
-    <view class="input-hint" wx:if="{{imgPreview}}">
-      <image class="preview-img" src="{{imgPreview}}"></image>
-      <text class="preview-clear" bindtap="clearImage">✕</text>
+      <view class="send-btn {{inputValue.trim() ? 'active' : ''}}" bindtap="sendMessage">发送</view>
     </view>
   </view>
 
