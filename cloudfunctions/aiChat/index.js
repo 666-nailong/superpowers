@@ -11,11 +11,11 @@ const API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
 const API_KEY = process.env.ZHIPU_API_KEY;
 
 // 系统提示词
-const SYSTEM_PROMPT = '你是一位专业的大学电路分析老师。请仔细分析用户提供的电路图片和问题，给出清晰、详细的解题步骤。回答要求：\n'
-  + '1. **绝对禁止使用任何LaTeX或Markdown公式语法**（禁止\\、$、{}、dfrac、frac、sqrt等标记），所有公式一律用纯文本和四则运算符书写；\n'
-  + '2. 示例：容抗写为 Xc=1/(2πfC)，阻抗写为 Z=R+j(XL-XC)，相量写为 U=220∠30°V，功率写为 P=UI·cosφ；\n'
-  + '3. 重点文字用**加粗**，解题步骤用-列表分项，电路定律名称加粗（如**基尔霍夫定律**、**戴维南定理**）；\n'
-  + '4. 先描述电路图结构（如有），再分步解题，每步说明用了什么定律；语言通俗易懂，适合大一学生理解。';
+const SYSTEM_PROMPT = '你是电路分析老师，回答必须遵守以下硬性规则：\n'
+  + '【公式规则】绝对禁止任何LaTeX语法。禁止出现\\、$、{、}、frac、pi、Omega、sum、int、sqrt、angle、rightarrow等所有公式标记符号。所有公式用纯文本和四则运算符(+-*/)书写，括号用普通圆括号()。\n'
+  + '示例：容抗=1/(2*圆周率*f*C)，感抗=2*圆周率*f*L，阻抗模=根号下(R平方+(XL-XC)平方)，节点电压方程用U1/R1+(U1-U2)/R2=0这种形式。\n'
+  + '【单位规则】单位写中文：欧姆、法拉、赫兹、伏特、安培、瓦特、亨利、秒，禁止用Ω、F、Hz、V、A、W、H、s等字母符号。\n'
+  + '【格式规则】重点内容用**加粗**，解题步骤用-列表分项，先说电路图结构再分步解题，每步说明用了什么定律，用大一学生能看懂的大白话。';
 
 exports.main = async (event, context) => {
   const { text, imgUrl } = event;
@@ -38,13 +38,15 @@ exports.main = async (event, context) => {
     }
   } catch (e) { /* 集合不存在忽略限制 */ }
 
-  // 3. Base64 前缀自动补齐
-  const fullImgUrl = imgUrl && typeof imgUrl === 'string' && !imgUrl.startsWith('data:image/')
+  // 3. Base64 前缀自动补齐 + 清洗（去除换行回车空格，防非法字符）
+  let fullImgUrl = imgUrl && typeof imgUrl === 'string' && !imgUrl.startsWith('data:image/')
     ? 'data:image/jpeg;base64,' + imgUrl
     : imgUrl;
+  if (fullImgUrl && fullImgUrl.startsWith('data:')) {
+    fullImgUrl = fullImgUrl.replace(/[\n\r\s]/g, '');
+  }
 
   // 4. 构造消息体
-  //    纯文字 → content 传字符串；有图片 → content 传数组（智谱API规范）
   const userContent = fullImgUrl
     ? [
         { type: 'text', text: text || '请详细分析这张电路图片，给出解题步骤' },
@@ -54,7 +56,7 @@ exports.main = async (event, context) => {
 
   // 5. 调用智谱 API
   try {
-    const response = await axios.post(API_URL, {
+    const body = {
       model: 'glm-4v-flash',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
@@ -62,13 +64,17 @@ exports.main = async (event, context) => {
       ],
       temperature: 0.3,
       max_tokens: 2048
-    }, {
+    };
+    const bodySize = JSON.stringify(body).length;
+    console.log('[aiChat] request body size:', bodySize, 'bytes, hasImage:', !!fullImgUrl, 'openId:', openId);
+
+    const response = await axios.post(API_URL, body, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_KEY}`
       },
-      timeout: 30000,
-      maxContentLength: 10 * 1024 * 1024 // 最大 10MB（防止大图base64超限）
+      timeout: 90000,
+      maxContentLength: 10 * 1024 * 1024
     });
 
     const answer = response.data?.choices?.[0]?.message?.content || '';

@@ -74,22 +74,43 @@ Page({
   },
 
   sendImgQuestion(text, imgPath) {
-    // 本地读图片 → base64 → 直接调云函数（不走云存储，智谱外网无法访问临时链接）
+    // 压缩图片 → 读base64 → 调云函数
     this.pushMsg('assistant', '🔍 正在分析电路...');
     this._busy = true;
-    try {
-      const base64 = wx.getFileSystemManager().readFileSync(imgPath, 'base64');
-      this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', base64).then((answer) => {
-        this._busy = false;
-        this.updMsg(answer);
-      }).catch((err) => {
-        this._busy = false;
-        this.updMsg('⚠️ ' + (err.message || 'AI分析失败'));
-      });
-    } catch (e) {
-      this._busy = false;
-      this.updMsg('⚠️ 图片读取失败，请重试');
-    }
+    wx.compressImage({
+      src: imgPath, quality: 70,
+      success: (compressed) => {
+        try {
+          const base64 = wx.getFileSystemManager().readFileSync(compressed.tempFilePath, 'base64');
+          this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', base64).then((answer) => {
+            this._busy = false;
+            this.updMsg(answer);
+          }).catch((err) => {
+            this._busy = false;
+            this.updMsg('⚠️ ' + (err.message || 'AI分析失败'));
+          });
+        } catch (e) {
+          this._busy = false;
+          this.updMsg('⚠️ 图片读取失败，请重试');
+        }
+      },
+      fail: () => {
+        // 压缩失败时用原图
+        try {
+          const base64 = wx.getFileSystemManager().readFileSync(imgPath, 'base64');
+          this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', base64).then((answer) => {
+            this._busy = false;
+            this.updMsg(answer);
+          }).catch((err) => {
+            this._busy = false;
+            this.updMsg('⚠️ ' + (err.message || 'AI分析失败'));
+          });
+        } catch (e) {
+          this._busy = false;
+          this.updMsg('⚠️ 图片读取失败，请重试');
+        }
+      }
+    });
   },
 
   sendSuggestion(e) {
