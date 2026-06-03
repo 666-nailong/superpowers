@@ -2,6 +2,7 @@
 // 通过智谱 GLM-4V-Flash（免费模型）处理文字和图片问答
 const cloud = require('wx-server-sdk');
 const axios = require('axios');
+const fs = require('fs');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
@@ -18,7 +19,7 @@ const SYSTEM_PROMPT = '你是电路分析老师，回答必须遵守以下硬性
   + '【格式规则】重点内容用**加粗**，解题步骤用-列表分项，先说电路图结构再分步解题，每步说明用了什么定律，用大一学生能看懂的大白话。';
 
 exports.main = async (event, context) => {
-  const { text, imgUrl } = event;
+  const { text, imgUrl } = event; // imgUrl 可能是 fileID 或 base64 字符串
   const wxContext = cloud.getWXContext();
   const openId = wxContext.OPENID;
 
@@ -38,19 +39,34 @@ exports.main = async (event, context) => {
     }
   } catch (e) { /* 集合不存在忽略限制 */ }
 
-  // 3. Base64 前缀自动补齐 + 清洗（去除换行回车空格，防非法字符）
-  let fullImgUrl = imgUrl && typeof imgUrl === 'string' && !imgUrl.startsWith('data:image/')
-    ? 'data:image/jpeg;base64,' + imgUrl
-    : imgUrl;
-  if (fullImgUrl && fullImgUrl.startsWith('data:')) {
-    fullImgUrl = fullImgUrl.replace(/[\n\r\s]/g, '');
+  // 3. 图片处理：优先从云存储 fileID 下载转 base64，兼容直接传入 base64
+  let imageBase64 = '';
+  if (imgUrl) {
+    if (imgUrl.startsWith('cloud://') || imgUrl.startsWith('wxfile://')) {
+      // 云存储 fileID → 云函数内下载 → 转 base64（绕过前端1MB传输限制）
+      try {
+        const tmpRes = await cloud.downloadFile({ fileID: imgUrl });
+        const tmpPath = tmpRes.fileContent; // Buffer
+        imageBase64 = tmpPath.toString('base64');
+      } catch (e) {
+        console.error('[aiChat] downloadFile error:', e.message);
+      }
+    } else if (imgUrl.startsWith('data:image/') || imgUrl.startsWith('/')) {
+      // 已带前缀的 base64 或本地路径
+      imageBase64 = imgUrl;
+    } else {
+      // 裸 base64（无前缀）→ 补前缀
+      imageBase64 = 'data:image/jpeg;base64,' + imgUrl;
+    }
+    // 清洗无效字符
+    if (imageBase64) imageBase64 = imageBase64.replace(/[\n\r]/g, '');
   }
 
   // 4. 构造消息体
-  const userContent = fullImgUrl
+  const userContent = imageBase64
     ? [
         { type: 'text', text: text || '请详细分析这张电路图片，给出解题步骤' },
-        { type: 'image_url', image_url: { url: fullImgUrl } }
+        { type: 'image_url', image_url: { url: imageBase64 } }
       ]
     : text || '请详细分析这张电路图片，给出解题步骤';
 
@@ -66,7 +82,7 @@ exports.main = async (event, context) => {
       max_tokens: 2048
     };
     const bodySize = JSON.stringify(body).length;
-    console.log('[aiChat] request body size:', bodySize, 'bytes, hasImage:', !!fullImgUrl, 'openId:', openId);
+    console.log('[aiChat] request body size:', bodySize, 'bytes, hasImage:', !!imageBase64, 'openId:', openId);
 
     const response = await axios.post(API_URL, body, {
       headers: {

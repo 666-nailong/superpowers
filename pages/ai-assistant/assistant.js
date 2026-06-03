@@ -74,42 +74,29 @@ Page({
   },
 
   sendImgQuestion(text, imgPath) {
-    // 压缩图片 → 读base64 → 调云函数
+    // 压缩 → 上传云存储(绕过wx.cloud.callFunction 1MB限制) → 云函数下载转base64
     this.pushMsg('assistant', '🔍 正在分析电路...');
     this._busy = true;
     wx.compressImage({
-      src: imgPath, quality: 70,
+      src: imgPath, quality: 60,
       success: (compressed) => {
-        try {
-          const base64 = wx.getFileSystemManager().readFileSync(compressed.tempFilePath, 'base64');
-          this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', base64).then((answer) => {
-            this._busy = false;
-            this.updMsg(answer);
-          }).catch((err) => {
-            this._busy = false;
-            this.updMsg('⚠️ ' + (err.message || 'AI分析失败'));
-          });
-        } catch (e) {
-          this._busy = false;
-          this.updMsg('⚠️ 图片读取失败，请重试');
-        }
+        const ext = imgPath.match(/\.(\w+)$/)?.[1] || 'jpg';
+        wx.cloud.uploadFile({
+          cloudPath: 'chat_imgs/' + Date.now() + '.' + ext,
+          filePath: compressed.tempFilePath,
+          success: (up) => {
+            this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', up.fileID).then((answer) => {
+              this._busy = false;
+              this.updMsg(answer);
+            }).catch((err) => {
+              this._busy = false;
+              this.updMsg('⚠️ ' + (err.message || 'AI分析失败'));
+            });
+          },
+          fail: () => { this._busy = false; this.updMsg('⚠️ 图片上传失败'); }
+        });
       },
-      fail: () => {
-        // 压缩失败时用原图
-        try {
-          const base64 = wx.getFileSystemManager().readFileSync(imgPath, 'base64');
-          this.callAICloud(text || '请详细分析这张电路图片，给出解题步骤', base64).then((answer) => {
-            this._busy = false;
-            this.updMsg(answer);
-          }).catch((err) => {
-            this._busy = false;
-            this.updMsg('⚠️ ' + (err.message || 'AI分析失败'));
-          });
-        } catch (e) {
-          this._busy = false;
-          this.updMsg('⚠️ 图片读取失败，请重试');
-        }
-      }
+      fail: () => { this._busy = false; this.updMsg('⚠️ 图片压缩失败'); }
     });
   },
 
@@ -206,11 +193,11 @@ Page({
   },
 
   // ===== 云函数调用 =====
-  callAICloud(text, imgBase64) {
+  callAICloud(text, imgFileID) {
     return new Promise((resolve, reject) => {
       wx.cloud.callFunction({
         name: 'aiChat',
-        data: { text, imgUrl: imgBase64 },
+        data: { text, imgUrl: imgFileID },
         success: (res) => {
           const result = res.result || {};
           if (result.code === 0) resolve(result.data);
